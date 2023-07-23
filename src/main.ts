@@ -59,7 +59,6 @@ export async function bootstrap(): Promise<NestFastifyApplication> {
         contentSecurityPolicy:
             process.env.NODE_ENV === 'production' ? undefined : false,
     });
-    //@ts-ignore
 
     await app.register(fastifySecureSession, {
         key: [Buffer.from(key1, 'hex'), Buffer.from(key2, 'hex')],

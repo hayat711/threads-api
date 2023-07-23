@@ -1,35 +1,44 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { UserService } from './user.service';
-import { User } from './entities/user.entity';
+import { Profile, User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
+import { GqlFastifyContext } from 'src/common/types/graphql.types';
 
 @Resolver(() => User)
 export class UserResolver {
-  constructor(private readonly userService: UserService) {}
+    constructor(private readonly userService: UserService) {}
 
-  @Mutation(() => User)
-  createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
-    return this.userService.create(createUserInput);
-  }
+    @Mutation(() => User)
+    createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
+        return this.userService.create(createUserInput);
+    }
 
-  @Query(() => [User], { name: 'user' })
-  findAll() {
-    return this.userService.findAll();
-  }
+    @Query(() => User, { name: 'user' })
+    findOne(@Args('field') field: string, @Args('value') value: string) {
+        try {
+            return this.userService.findOneByField(field, value, {
+                throwError: true,
+                includeRelations: true,
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
 
-  @Query(() => User, { name: 'user' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.userService.findOne(id);
-  }
-
-  @Mutation(() => User)
-  updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
-    return this.userService.update(updateUserInput.id, updateUserInput);
-  }
-
-  @Mutation(() => User)
-  removeUser(@Args('id', { type: () => Int }) id: number) {
-    return this.userService.remove(id);
-  }
+    @Mutation(() => Profile)
+    public async updateUser(
+        @Args('values') values: UpdateUserInput,
+        @Context() ctx: GqlFastifyContext,
+    ) {
+        try {
+            const session = await ctx.req.session.get('user');
+            // add logic to upload and update the profile picture
+            const user = await this.userService.update(session.id, values);
+            ctx.req.session.set('user', user);
+            return user;
+        } catch (error) {
+            console.log(error);
+        }
+    }
 }

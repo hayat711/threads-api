@@ -4,16 +4,12 @@ import { UpdateUserInput } from './dto/update-user.input';
 import { PrismaService } from 'src/database/prisma.service';
 import { hash } from 'argon2';
 import { isPrismaError } from 'src/common/utils';
-import {  User} from '@prisma/client';
-
+import { User } from '@prisma/client';
 
 interface findOneByFieldOptions {
-    throwError?: boolean
-    includeRelations?: boolean
+    throwError?: boolean;
+    includeRelations?: boolean;
 }
-
-
-
 
 @Injectable()
 export class UserService {
@@ -57,7 +53,6 @@ export class UserService {
                     },
                     include: {
                         threads: true,
-                       
                     },
                 });
             }
@@ -75,19 +70,21 @@ export class UserService {
             throw err;
         }
     }
-    findAll() {
-        return `This action returns all user`;
-    }
 
-    findOne(id: number) {
-        return `This action returns a #${id} user`;
-    }
+    public async update(userId: string, values: UpdateUserInput) {
+        try {
+            const user = await this.prisma.user.update({
+                where: {
+                    id: userId,
+                },
+                //@ts-ignore
+                data: values,
+            });
 
-    update(id: number, updateUserInput: UpdateUserInput) {
-        return `This action updates a #${id} user`;
-    }
-
-    remove(id: number) {
-        return `This action removes a #${id} user`;
+            return user;
+        } catch (error) {
+            isPrismaError(error);
+            throw error;
+        }
     }
 }
