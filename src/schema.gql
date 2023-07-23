@@ -1,0 +1,118 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Auth {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input CreateAuthInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input CreateReplyInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input CreateThreadInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input CreateUserInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Mutation {
+  createAuth(createAuthInput: CreateAuthInput!): Auth!
+  createReply(createReplyInput: CreateReplyInput!): Reply!
+  createThread(createThreadInput: CreateThreadInput!): Thread!
+  createUser(createUserInput: CreateUserInput!): User!
+  removeAuth(id: Int!): Auth!
+  removeReply(id: Int!): Reply!
+  removeThread(id: Int!): Thread!
+  removeUser(id: Int!): User!
+  updateAuth(updateAuthInput: UpdateAuthInput!): Auth!
+  updateReply(updateReplyInput: UpdateReplyInput!): Reply!
+  updateThread(updateThreadInput: UpdateThreadInput!): Thread!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+}
+
+type Query {
+  auth(id: Int!): Auth!
+  reply(id: Int!): Reply!
+  thread(id: Int!): Thread!
+  user(id: Int!): User!
+}
+
+type Reply {
+  author: User!
+  authorId: String!
+  content: String!
+  likes: Int!
+  thread: Thread!
+  threadId: String!
+}
+
+type Thread {
+  author: User!
+  authorId: String!
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  image: String
+  likesCount: Int!
+  mention: Boolean
+  mentionUserId: String
+  mentionUsers: [User!]
+  replies: [Reply!]
+  repliesCount: Int!
+  updatedAt: DateTime!
+}
+
+input UpdateAuthInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input UpdateReplyInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input UpdateThreadInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input UpdateUserInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+type User {
+  bio: String
+  createdAt: DateTime!
+  id: ID!
+  link: String
+  mentionedThreads: [Thread!]
+  photo: String
+  replies: [Reply!]
+  threads: [Thread!]
+  updatedAt: DateTime!
+  username: String!
+  verified: Boolean!
+}
