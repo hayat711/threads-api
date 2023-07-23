@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  username    String    @unique
+  bio         String?
+  photo       String?
+  verified    Boolean   @default(false)
+  link        String?
+  threads     Thread[]  @relation("ThreadAuthor")
+  mentionedThreads Thread[] @relation("ThreadMentionUser")
+  replies     Reply[]   @relation("ReplyAuthor")
+}
+
+model Thread {
+  id            String    @id @default(uuid()) @db.VarChar(36)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  content       String
+  author        User      @relation("ThreadAuthor", fields: [authorId], references: [id])
+  authorId      String
+  image         String?
+  replies       Reply[]   @relation("ThreadReplies")
+  repliesCount  Int       @default(0)
+  likesCount    Int       @default(0)
+  mention       Boolean?  @default(false)
+  mentionUser   User?     @relation("ThreadMentionUser", fields: [mentionUserId], references: [id])
+  mentionUserId String?
+}
+
+model Reply {
+  id        String    @id @default(uuid()) @db.VarChar(36)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  author    User      @relation("ReplyAuthor", fields: [authorId], references: [id])
+  authorId  String
+  content   String
+  likes     Int       @default(0)
+  thread    Thread    @relation("ThreadReplies", fields: [threadId], references: [id])
+  threadId  String
+}

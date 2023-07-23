@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  thread-db:
+    image: postgres:13
+    ports:
+      - 5434:5432
+    environment:
+      POSTGRES_USER: hyt01
+      POSTGRES_PASSWORD: hayatdb12
+      POSTGRES_DB: thread_db
+    networks:
+      - hyt
+
+networks:
+  hyt:
