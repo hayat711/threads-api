@@ -1,26 +1,58 @@
 import { Injectable } from '@nestjs/common';
 import { CreateReplyInput } from './dto/create-reply.input';
 import { UpdateReplyInput } from './dto/update-reply.input';
+import { PrismaService } from 'src/database/prisma.service';
 
 @Injectable()
 export class ReplyService {
-  create(createReplyInput: CreateReplyInput) {
-    return 'This action adds a new reply';
-  }
+    constructor(private readonly prisma: PrismaService) {}
 
-  findAll() {
-    return `This action returns all reply`;
-  }
+    public async createReply(data: CreateReplyInput, userId: string) {
+        try {
+            const { content, threadId } = data;
+            const reply = await this.prisma.reply.create({
+                data: {
+                    content,
+                    authorId: userId,
+                    threadId,
+                },
+            });
+            return reply;
+        } catch (error) {
+            throw error;
+        }
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} reply`;
-  }
+    public async getAllReplies(threadId: string) {
+        try {
+            const replies = await this.prisma.reply.findMany({
+                where: {
+                    threadId,
+                },
+            });
+            return replies;
+        } catch (error) {
+            throw error;
+        }
+    }
 
-  update(id: number, updateReplyInput: UpdateReplyInput) {
-    return `This action updates a #${id} reply`;
-  }
+    public async getReply(id: string) {
+        try {
+            return await this.prisma.reply.findFirst({
+                where: {
+                    id,
+                },
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} reply`;
-  }
+    update(id: number, updateReplyInput: UpdateReplyInput) {
+        return `This action updates a #${id} reply`;
+    }
+
+    remove(id: number) {
+        return `This action removes a #${id} reply`;
+    }
 }

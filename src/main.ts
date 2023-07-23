@@ -43,7 +43,6 @@ export async function bootstrap(): Promise<NestFastifyApplication> {
         prefix: '/public/',
     });
 
-    //@ts-ignore
     await app.register(fastifyCookie, {
         secret: configService.get('COOKIE_SECRET'),
         parseOptions: {
@@ -52,8 +51,6 @@ export async function bootstrap(): Promise<NestFastifyApplication> {
             httpOnly: true,
         },
     });
-
-    //@ts-ignore
 
     await app.register(fastifyHelmet, {
         contentSecurityPolicy:
