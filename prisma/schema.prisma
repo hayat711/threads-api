@@ -15,6 +15,7 @@ model User {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   username    String    @unique
+  password    String
   bio         String?
   photo       String?
   verified    Boolean   @default(false)

@@ -1,35 +1,28 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 import { Auth } from './entities/auth.entity';
-import { CreateAuthInput } from './dto/create-auth.input';
-import { UpdateAuthInput } from './dto/update-auth.input';
+import { CreateUserInput } from 'src/user/dto/create-user.input';
+import { AuthResult, CredentialsInput } from './dto/create-auth.input';
+import { GqlFastifyContext } from 'src/common/types/graphql.types';
 
-@Resolver(() => Auth)
+@Resolver('Auth')
 export class AuthResolver {
-  constructor(private readonly authService: AuthService) {}
+    constructor(private readonly authService: AuthService) {}
 
-  @Mutation(() => Auth)
-  createAuth(@Args('createAuthInput') createAuthInput: CreateAuthInput) {
-    return this.authService.create(createAuthInput);
-  }
+    @Mutation(() => AuthResult)
+    async register(
+        @Args('createUserInput') createUserInput: CreateUserInput,
+        @Context() ctx: GqlFastifyContext,
+    ) {
+        const result = await this.authService.register(createUserInput);
+        ctx.req.session.set('user', result.profile);
 
-  @Query(() => [Auth], { name: 'auth' })
-  findAll() {
-    return this.authService.findAll();
-  }
+        return result;
 
-  @Query(() => Auth, { name: 'auth' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.authService.findOne(id);
-  }
+    }
 
-  @Mutation(() => Auth)
-  updateAuth(@Args('updateAuthInput') updateAuthInput: UpdateAuthInput) {
-    return this.authService.update(updateAuthInput.id, updateAuthInput);
-  }
-
-  @Mutation(() => Auth)
-  removeAuth(@Args('id', { type: () => Int }) id: number) {
-    return this.authService.remove(id);
-  }
+    @Mutation(() => Auth)
+    login(@Args('credentialsInput') credentialsInput: CredentialsInput) {
+        return this.authService.login(credentialsInput);
+    }
 }

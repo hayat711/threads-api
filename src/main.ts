@@ -4,11 +4,15 @@ import {
     FastifyAdapter,
     NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import { fastifyHelmet } from '@fastify/helmet';
+import fastifyCookie from '@fastify/cookie';
+import fastifySecureSession from '@fastify/secure-session';
 import { ConfigService } from '@nestjs/config';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
 import { UserInputError } from '@nestjs/apollo';
 import { processRequest } from 'graphql-upload-minimal';
+import { join } from 'path';
 
 export async function bootstrap(): Promise<NestFastifyApplication> {
     const app = await NestFactory.create<NestFastifyApplication>(
@@ -18,11 +22,55 @@ export async function bootstrap(): Promise<NestFastifyApplication> {
     const configService = app.get<ConfigService>(ConfigService);
     const reflector = app.get(Reflector);
 
+    const productionDomain = configService.get('PRODUCTION_DOMAIN');
+
+    const keys = {
+        key1: configService.get('SESSION_KEY1'),
+        key2: configService.get('SESSION_KEY2'),
+    };
+
+    const { key1, key2 } = keys;
     app.enableCors({
         credentials: true,
         origin: configService.get('FRONTEND_URL'),
         optionsSuccessStatus: 200,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    });
+
+    const path = join(process.cwd(), 'public');
+    app.useStaticAssets({
+        root: path,
+        prefix: '/public/',
+    });
+
+    //@ts-ignore
+    await app.register(fastifyCookie, {
+        secret: configService.get('COOKIE_SECRET'),
+        parseOptions: {
+            secure:
+                configService.get('NODE_ENV') === 'production' ? true : false,
+            httpOnly: true,
+        },
+    });
+
+    //@ts-ignore
+
+    await app.register(fastifyHelmet, {
+        contentSecurityPolicy:
+            process.env.NODE_ENV === 'production' ? undefined : false,
+    });
+    //@ts-ignore
+
+    await app.register(fastifySecureSession, {
+        key: [Buffer.from(key1, 'hex'), Buffer.from(key2, 'hex')],
+        cookieName: 'threads_session',
+        cookie: {
+            secure:
+                configService.get('NODE_ENV') === 'production' ? true : false,
+            httpOnly: true,
+            sameSite: 'lax',
+            path: '/',
+        },
     });
 
     // format the request body to follow graphql-upload's

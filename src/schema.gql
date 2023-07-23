@@ -10,6 +10,8 @@ type Auth {
 input CreateAuthInput {
   """Example field (placeholder)"""
   exampleField: Int!
+  password: String!
+  username: String!
 }
 
 input CreateReplyInput {
@@ -83,6 +85,8 @@ input UpdateAuthInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!
+  password: String
+  username: String
 }
 
 input UpdateReplyInput {
@@ -109,6 +113,7 @@ type User {
   id: ID!
   link: String
   mentionedThreads: [Thread!]
+  password: String!
   photo: String
   replies: [Reply!]
   threads: [Thread!]

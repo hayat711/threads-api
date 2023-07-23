@@ -9,6 +9,9 @@ export class User extends BaseEntity {
     @Field(() => String)
     username: UserDB['username'];
 
+    @Field(() => String)
+    password: UserDB['password'];
+
     @Field(() => String, { nullable: true })
     bio: UserDB['bio'];
 
@@ -30,3 +33,7 @@ export class User extends BaseEntity {
     @Field(() => [Thread], { nullable: true })
     mentionedThreads: Thread[];
 }
+
+
+@ObjectType()
+export class Profile extends User {}
