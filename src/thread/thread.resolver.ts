@@ -4,6 +4,8 @@ import { Thread } from './entities/thread.entity';
 import { CreateThreadInput } from './dto/create-thread.input';
 import { UpdateThreadInput } from './dto/update-thread.input';
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
+import { UseGuards } from '@nestjs/common';
+import { SessionGuard } from 'src/common/guards/auth.guard';
 
 @Resolver(() => Thread)
 export class ThreadResolver {
@@ -42,5 +44,16 @@ export class ThreadResolver {
     @Mutation(() => Thread)
     removeThread(@Args('id', { type: () => Int }) id: number) {
         return this.threadService.remove(id);
+    }
+
+    // mutation to add like to thread
+    @UseGuards(SessionGuard)
+    @Mutation(() => Thread)
+    async addLikeToThread(
+        @Args('threadId', { type: () => String }) threadId: string,
+        @Context() ctx: GqlFastifyContext,
+    ) {
+        const user = ctx.req.session.get('user');
+        return await this.threadService.addLikeToThread(threadId, user.id);
     }
 }

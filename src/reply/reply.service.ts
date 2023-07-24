@@ -17,6 +17,18 @@ export class ReplyService {
                     threadId,
                 },
             });
+            // increment reply count of the corresponding thread
+            await this.prisma.thread.update({
+                where: {
+                    id: threadId,
+                },
+                data: {
+                    repliesCount: {
+                        increment: 1,
+                    },
+                },
+            });
+
             return reply;
         } catch (error) {
             throw error;

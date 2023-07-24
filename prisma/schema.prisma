@@ -2,53 +2,99 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator nestgraphql {
+    provider = "node node_modules/prisma-nestjs-graphql"
+    output   = "../src/@generated/prisma-graphql"
+    fields_Validator_from = "class-validator"
+    fields_Validator_input = true
 }
 
 model User {
-  id          String    @id @default(uuid()) @db.VarChar(36)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  username    String    @unique
-  password    String
-  bio         String?
-  photo       String?
-  verified    Boolean   @default(false)
-  link        String?
-  threads     Thread[]  @relation("ThreadAuthor")
-  mentionedThreads Thread[] @relation("ThreadMentionUser")
-  replies     Reply[]   @relation("ReplyAuthor")
+    id               String   @id @default(uuid()) @db.VarChar(36)
+    createdAt        DateTime @default(now())
+    updatedAt        DateTime @updatedAt
+    username         String   @unique
+    password         String
+    bio              String?
+    photo            String?
+    verified         Boolean  @default(false)
+    link             String?
+    threads          Thread[] @relation("ThreadAuthor")
+    mentionedThreads Thread[] @relation("ThreadMentionUser")
+    replies          Reply[]  @relation("ReplyAuthor")
+    likes            Like[]   @relation()
+    followers        Follow[] @relation("Followers")
+    followings       Follow[] @relation("Followings")
+
+    @@index([username], name: "username")
 }
 
 model Thread {
-  id            String    @id @default(uuid()) @db.VarChar(36)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  content       String
-  author        User      @relation("ThreadAuthor", fields: [authorId], references: [id])
-  authorId      String
-  image         String?
-  replies       Reply[]   @relation("ThreadReplies")
-  repliesCount  Int       @default(0)
-  likesCount    Int       @default(0)
-  mention       Boolean?  @default(false)
-  mentionUser   User?     @relation("ThreadMentionUser", fields: [mentionUserId], references: [id])
-  mentionUserId String?
+    id            String   @id @default(uuid()) @db.VarChar(36)
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+    /// @Validator.MaxLength(500)
+    content       String
+    author        User     @relation("ThreadAuthor", fields: [authorId], references: [id])
+    authorId      String   @unique
+    image         String?
+    replies       Reply[]  @relation("ThreadReplies")
+    repliesCount  Int      @default(0)
+    likesCount    Int      @default(0)
+    mention       Boolean? @default(false)
+    mentionUser   User?    @relation("ThreadMentionUser", fields: [mentionUserId], references: [id])
+    mentionUserId String?
+    Like          Like[]
+
+    @@index([authorId], name: "authorId")
 }
 
 model Reply {
-  id        String    @id @default(uuid()) @db.VarChar(36)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  author    User      @relation("ReplyAuthor", fields: [authorId], references: [id])
-  authorId  String
-  content   String
-  likes     Int       @default(0)
-  thread    Thread    @relation("ThreadReplies", fields: [threadId], references: [id])
-  threadId  String
+    id        String   @id @default(uuid()) @db.VarChar(36)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    author    User     @relation("ReplyAuthor", fields: [authorId], references: [id])
+    authorId  String   @unique
+    /// @Validator.MaxLength(200) 
+    content   String
+    likes     Int      @default(0)
+    thread    Thread   @relation("ThreadReplies", fields: [threadId], references: [id])
+    threadId  String   @unique
+    Like      Like[]
+}
+
+model Like {
+    id        String   @id @default(uuid()) @db.VarChar(36)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    user      User     @relation(fields: [userId], references: [id])
+    userId    String
+    thread    Thread   @relation(fields: [threadId], references: [id])
+    threadId  String
+    reply     Reply    @relation(fields: [replyId], references: [id])
+    replyId   String
+
+    @@unique([userId, threadId])
+}
+
+model Follow {
+    id        String   @id @default(uuid()) @db.VarChar(36)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    follower    User   @relation("Followers", fields: [followerId], references: [id])
+    followerId  String
+    following   User   @relation("Followings", fields: [followingId], references: [id])
+    followingId String
+
+    isBlocked    Boolean @default(false)
+    isRestricted Boolean @default(false)
 }
