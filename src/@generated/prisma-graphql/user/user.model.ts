@@ -37,6 +37,9 @@ export class User {
     @Field(() => String, {nullable:true})
     link!: string | null;
 
+    @Field(() => Boolean, {nullable:false,defaultValue:false})
+    isPrivate!: boolean;
+
     @Field(() => [Thread], {nullable:true})
     threads?: Array<Thread>;
 

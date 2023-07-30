@@ -32,5 +32,8 @@ export class UserCountAggregateInput {
     link?: true;
 
     @Field(() => Boolean, {nullable:true})
+    isPrivate?: true;
+
+    @Field(() => Boolean, {nullable:true})
     _all?: true;
 }

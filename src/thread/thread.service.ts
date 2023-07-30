@@ -2,11 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateThreadInput } from './dto/create-thread.input';
 import { UpdateThreadInput } from './dto/update-thread.input';
 import { PrismaService } from 'src/database/prisma.service';
+import { isPrismaError } from 'src/common/utils';
 
 @Injectable()
 export class ThreadService {
     constructor(private readonly prisma: PrismaService) {}
     public async createThread(data: CreateThreadInput, userId: string) {
+        console.log('thread data', data);
+        
         try {
             const thread = await this.prisma.thread.create({
                 data: {
@@ -16,6 +19,8 @@ export class ThreadService {
             });
             return thread;
         } catch (error) {
+            console.log('error in creating thread', error);
+            isPrismaError(error);
             throw error;
         }
     }

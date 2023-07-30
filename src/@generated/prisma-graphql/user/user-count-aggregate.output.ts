@@ -33,5 +33,8 @@ export class UserCountAggregate {
     link!: number;
 
     @Field(() => Int, {nullable:false})
+    isPrivate!: number;
+
+    @Field(() => Int, {nullable:false})
     _all!: number;
 }

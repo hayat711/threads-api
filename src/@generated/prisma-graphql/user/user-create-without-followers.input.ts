@@ -36,6 +36,9 @@ export class UserCreateWithoutFollowersInput {
     @Field(() => String, {nullable:true})
     link?: string;
 
+    @Field(() => Boolean, {nullable:true})
+    isPrivate?: boolean;
+
     @Field(() => ThreadCreateNestedManyWithoutAuthorInput, {nullable:true})
     threads?: ThreadCreateNestedManyWithoutAuthorInput;
 

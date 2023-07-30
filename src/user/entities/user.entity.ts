@@ -24,6 +24,9 @@ export class User extends BaseEntity {
     @Field(() => Boolean)
     verified: UserDB['verified'];
 
+    @Field(() => Boolean)
+    isPrivate: UserDB['isPrivate']
+
     @Field(() => [Thread], { nullable: true })
     threads: Thread[];
 

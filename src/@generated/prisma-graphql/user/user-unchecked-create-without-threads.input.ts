@@ -36,6 +36,9 @@ export class UserUncheckedCreateWithoutThreadsInput {
     @Field(() => String, {nullable:true})
     link?: string;
 
+    @Field(() => Boolean, {nullable:true})
+    isPrivate?: boolean;
+
     @Field(() => ThreadUncheckedCreateNestedManyWithoutMentionUserInput, {nullable:true})
     mentionedThreads?: ThreadUncheckedCreateNestedManyWithoutMentionUserInput;
 

@@ -9,13 +9,14 @@ type AuthResult {
 }
 
 input CreateReplyInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  content: String!
+  threadId: String!
 }
 
 input CreateThreadInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  content: String!
+  image: String!
+  mentionUserId: String!
 }
 
 input CreateUserInput {
@@ -37,12 +38,12 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type Mutation {
+  addLikeToThread(threadId: String!): Thread!
   createReply(createReplyInput: CreateReplyInput!): Reply!
   createThread(createThreadInput: CreateThreadInput!): Thread!
   createUser(createUserInput: CreateUserInput!): User!
   login(credentialsInput: CredentialsInput!): AuthResult!
   logout: AuthResult!
-  me: AuthResult!
   register(createUserInput: CreateUserInput!): AuthResult!
   removeReply(id: Int!): Reply!
   removeThread(id: Int!): Thread!
@@ -55,6 +56,7 @@ type Profile {
   bio: String
   createdAt: DateTime!
   id: ID!
+  isPrivate: Boolean!
   link: String
   mentionedThreads: [Thread!]
   password: String!
@@ -67,8 +69,9 @@ type Profile {
 }
 
 type Query {
-  reply(id: Int!): Reply!
-  thread(id: Int!): Thread!
+  me: AuthResult!
+  reply(id: String!): Reply!
+  thread(id: String!): Thread!
   user(field: String!, value: String!): User!
 }
 
@@ -98,21 +101,25 @@ type Thread {
 }
 
 input UpdateReplyInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  content: String
   id: Int!
+  threadId: String
 }
 
 input UpdateThreadInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  content: String
   id: Int!
+  image: String
+  mentionUserId: String
 }
 
 input UpdateUserInput {
   bio: String
-  id: Int!
+  id: String!
+  isPrivate: Boolean
+  link: String
   password: String
+  photo: String
   username: String
 }
 
@@ -120,6 +127,7 @@ type User {
   bio: String
   createdAt: DateTime!
   id: ID!
+  isPrivate: Boolean!
   link: String
   mentionedThreads: [Thread!]
   password: String!

@@ -27,6 +27,7 @@ model User {
     photo            String?
     verified         Boolean  @default(false)
     link             String?
+    isPrivate        Boolean  @default(false)
     threads          Thread[] @relation("ThreadAuthor")
     mentionedThreads Thread[] @relation("ThreadMentionUser")
     replies          Reply[]  @relation("ReplyAuthor")

@@ -40,6 +40,9 @@ export class UserUncheckedUpdateWithoutLikesInput {
     @Field(() => NullableStringFieldUpdateOperationsInput, {nullable:true})
     link?: NullableStringFieldUpdateOperationsInput;
 
+    @Field(() => BoolFieldUpdateOperationsInput, {nullable:true})
+    isPrivate?: BoolFieldUpdateOperationsInput;
+
     @Field(() => ThreadUncheckedUpdateManyWithoutAuthorNestedInput, {nullable:true})
     threads?: ThreadUncheckedUpdateManyWithoutAuthorNestedInput;
 

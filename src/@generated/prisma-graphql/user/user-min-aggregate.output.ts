@@ -30,4 +30,7 @@ export class UserMinAggregate {
 
     @Field(() => String, {nullable:true})
     link?: string;
+
+    @Field(() => Boolean, {nullable:true})
+    isPrivate?: boolean;
 }

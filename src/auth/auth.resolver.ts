@@ -4,8 +4,9 @@ import { Auth } from './entities/auth.entity';
 import { CreateUserInput } from 'src/user/dto/create-user.input';
 import { AuthResult, CredentialsInput } from './dto/create-auth.input';
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
-import { UseGuards } from '@nestjs/common';
+import { Session, UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/common/guards/auth.guard';
+import * as secureSession from '@fastify/secure-session';
 
 @Resolver('Auth')
 export class AuthResolver {
@@ -26,14 +27,17 @@ export class AuthResolver {
         @Args('credentialsInput') credentialsInput: CredentialsInput,
         @Context() ctx: GqlFastifyContext,
     ) {
+
         const result = await this.authService.login(credentialsInput);
         ctx.req.session.set('user', result.profile);
         return result;
     }
 
     @UseGuards(SessionGuard)
-    @Mutation(() => AuthResult)
-    public async me(@Context() ctx: GqlFastifyContext) {
+    @Query(() => AuthResult)
+    public async me(@Context() ctx: GqlFastifyContext,
+        @Session() session: secureSession.Session
+    ) {
         const profile = await this.authService.serializeSession(
             ctx.req.session.get('user'),
         );
@@ -45,7 +49,7 @@ export class AuthResolver {
         };
     }
 
-    @UseGuards(SessionGuard)
+    // @UseGuards(SessionGuard)
     @Mutation(() => AuthResult)
     public async logout(@Context() ctx: GqlFastifyContext) {
         ctx.req.session.delete();

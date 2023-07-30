@@ -40,6 +40,9 @@ export class UserUpdateWithoutThreadsInput {
     @Field(() => NullableStringFieldUpdateOperationsInput, {nullable:true})
     link?: NullableStringFieldUpdateOperationsInput;
 
+    @Field(() => BoolFieldUpdateOperationsInput, {nullable:true})
+    isPrivate?: BoolFieldUpdateOperationsInput;
+
     @Field(() => ThreadUpdateManyWithoutMentionUserNestedInput, {nullable:true})
     mentionedThreads?: ThreadUpdateManyWithoutMentionUserNestedInput;
 

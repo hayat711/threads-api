@@ -48,6 +48,9 @@ export class UserWhereInput {
     @Field(() => StringNullableFilter, {nullable:true})
     link?: StringNullableFilter;
 
+    @Field(() => BoolFilter, {nullable:true})
+    isPrivate?: BoolFilter;
+
     @Field(() => ThreadListRelationFilter, {nullable:true})
     threads?: ThreadListRelationFilter;
 

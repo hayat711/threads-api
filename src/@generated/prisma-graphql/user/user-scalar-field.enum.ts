@@ -9,7 +9,8 @@ export enum UserScalarFieldEnum {
     bio = "bio",
     photo = "photo",
     verified = "verified",
-    link = "link"
+    link = "link",
+    isPrivate = "isPrivate"
 }
 
 

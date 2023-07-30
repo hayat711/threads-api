@@ -35,6 +35,9 @@ export class UserOrderByWithAggregationInput {
     @Field(() => SortOrder, {nullable:true})
     link?: keyof typeof SortOrder;
 
+    @Field(() => SortOrder, {nullable:true})
+    isPrivate?: keyof typeof SortOrder;
+
     @Field(() => UserCountOrderByAggregateInput, {nullable:true})
     _count?: UserCountOrderByAggregateInput;
 

@@ -41,6 +41,11 @@ export class ReplyService {
                 where: {
                     threadId,
                 },
+                orderBy: {
+                    createdAt: 'asc',
+                },
+                
+
             });
             return replies;
         } catch (error) {

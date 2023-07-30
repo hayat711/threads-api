@@ -15,7 +15,7 @@ export class UserResolver {
     }
 
     @Query(() => User, { name: 'user' })
-    findOne(@Args('field') field: string, @Args('value') value: string) {
+    getUser(@Args('field') field: string, @Args('value') value: string) {
         try {
             return this.userService.findOneByField(field, value, {
                 throwError: true,
@@ -32,6 +32,7 @@ export class UserResolver {
         @Context() ctx: GqlFastifyContext,
     ) {
         try {
+            console.log('the values', values);
             const session = await ctx.req.session.get('user');
             // add logic to upload and update the profile picture
             const user = await this.userService.update(session.id, values);

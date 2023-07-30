@@ -17,6 +17,8 @@ export class ThreadResolver {
         @Context() ctx: GqlFastifyContext,
     ) {
         const user = ctx.req.session.get('user');
+        console.log('User object:', user);
+        console.log('the user id in crate therad ', user.id);
         return this.threadService.createThread(data, user.id);
     }
 

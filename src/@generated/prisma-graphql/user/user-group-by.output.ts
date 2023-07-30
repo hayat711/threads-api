@@ -34,6 +34,9 @@ export class UserGroupBy {
     @Field(() => String, {nullable:true})
     link?: string;
 
+    @Field(() => Boolean, {nullable:false})
+    isPrivate!: boolean;
+
     @Field(() => UserCountAggregate, {nullable:true})
     _count?: UserCountAggregate;
 

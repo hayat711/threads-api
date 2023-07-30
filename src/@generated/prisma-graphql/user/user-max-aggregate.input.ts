@@ -30,4 +30,7 @@ export class UserMaxAggregateInput {
 
     @Field(() => Boolean, {nullable:true})
     link?: true;
+
+    @Field(() => Boolean, {nullable:true})
+    isPrivate?: true;
 }

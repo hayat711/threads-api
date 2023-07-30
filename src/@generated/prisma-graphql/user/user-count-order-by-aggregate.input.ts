@@ -31,4 +31,7 @@ export class UserCountOrderByAggregateInput {
 
     @Field(() => SortOrder, {nullable:true})
     link?: keyof typeof SortOrder;
+
+    @Field(() => SortOrder, {nullable:true})
+    isPrivate?: keyof typeof SortOrder;
 }

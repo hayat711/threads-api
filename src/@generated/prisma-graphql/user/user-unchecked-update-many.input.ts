@@ -34,4 +34,7 @@ export class UserUncheckedUpdateManyInput {
 
     @Field(() => NullableStringFieldUpdateOperationsInput, {nullable:true})
     link?: NullableStringFieldUpdateOperationsInput;
+
+    @Field(() => BoolFieldUpdateOperationsInput, {nullable:true})
+    isPrivate?: BoolFieldUpdateOperationsInput;
 }
