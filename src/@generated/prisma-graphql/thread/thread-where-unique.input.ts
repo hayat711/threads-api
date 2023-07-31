@@ -6,7 +6,4 @@ export class ThreadWhereUniqueInput {
 
     @Field(() => String, {nullable:true})
     id?: string;
-
-    @Field(() => String, {nullable:true})
-    authorId?: string;
 }

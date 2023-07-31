@@ -6,10 +6,4 @@ export class ReplyWhereUniqueInput {
 
     @Field(() => String, {nullable:true})
     id?: string;
-
-    @Field(() => String, {nullable:true})
-    authorId?: string;
-
-    @Field(() => String, {nullable:true})
-    threadId?: string;
 }

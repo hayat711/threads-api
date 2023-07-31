@@ -45,7 +45,7 @@ model Thread {
     /// @Validator.MaxLength(500)
     content       String
     author        User     @relation("ThreadAuthor", fields: [authorId], references: [id])
-    authorId      String   @unique
+    authorId      String   
     image         String?
     replies       Reply[]  @relation("ThreadReplies")
     repliesCount  Int      @default(0)
@@ -63,12 +63,12 @@ model Reply {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     author    User     @relation("ReplyAuthor", fields: [authorId], references: [id])
-    authorId  String   @unique
+    authorId  String   
     /// @Validator.MaxLength(200) 
     content   String
     likes     Int      @default(0)
     thread    Thread   @relation("ThreadReplies", fields: [threadId], references: [id])
-    threadId  String   @unique
+    threadId  String   
     Like      Like[]
 }
 

@@ -70,8 +70,10 @@ type Profile {
 
 type Query {
   me: AuthResult!
+  myThreads: [Thread!]!
   reply(id: String!): Reply!
   thread(id: String!): Thread!
+  threads: [Thread!]!
   user(field: String!, value: String!): User!
 }
 

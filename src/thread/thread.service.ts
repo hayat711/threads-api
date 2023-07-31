@@ -7,9 +7,15 @@ import { isPrismaError } from 'src/common/utils';
 @Injectable()
 export class ThreadService {
     constructor(private readonly prisma: PrismaService) {}
+
     public async createThread(data: CreateThreadInput, userId: string) {
         console.log('thread data', data);
-        
+        const {content, image, mentionUserId} = data;
+        if (mentionUserId === '') {
+            delete data.mentionUserId;
+        }
+
+
         try {
             const thread = await this.prisma.thread.create({
                 data: {
@@ -30,7 +36,7 @@ export class ThreadService {
             const threads = await this.prisma.thread.findMany({
                 include: {
                     author: true,
-                    // replies: true,
+                    replies: true,
                 },
                 orderBy: {
                     createdAt: 'desc',
@@ -52,6 +58,25 @@ export class ThreadService {
             });
         } catch (error) {
             throw error;
+        }
+    }
+
+    public async getUserThreads(userId: string) {
+        try {
+            return await this.prisma.thread.findMany({
+                where: {
+                    authorId: userId,
+                },
+                orderBy: {
+                    createdAt: 'desc',
+                },
+                include: {
+                    author: true,
+                    replies: true,
+                }
+            })
+        } catch (error) {
+            console.log(error);
         }
     }
 

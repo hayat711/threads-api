@@ -12,22 +12,30 @@ export class ThreadResolver {
     constructor(private readonly threadService: ThreadService) {}
 
     @Mutation(() => Thread)
-    createThread(
+    async createThread(
         @Args('createThreadInput') data: CreateThreadInput,
         @Context() ctx: GqlFastifyContext,
     ) {
         const user = ctx.req.session.get('user');
-        console.log('User object:', user);
-        console.log('the user id in crate therad ', user.id);
-        return this.threadService.createThread(data, user.id);
+        const thread = await this.threadService.createThread(data, user.id);
+        console.log('the created thered to return is ',thread);
+        return thread;
     }
 
+
     //? TODO : Add pagination and check if it should be protected or not
-    @Query(() => [Thread], { name: 'thread' })
+    @Query(() => [Thread], { name: 'threads' })
     public async getAllThreads() {
         return await this.threadService.getAllThreads();
     }
 
+
+    @Query(() => [Thread], {name: 'myThreads'})
+    public async getUserThreads(@Context() ctx: GqlFastifyContext) {
+        const user = ctx.req.session.get('user');
+        return await this.threadService.getUserThreads(user.id);
+        
+    }
     @Query(() => Thread, { name: 'thread' })
     public async getThread(@Args('id', { type: () => String }) id: string) {
         return await this.threadService.getThread(id);
