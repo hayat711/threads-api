@@ -1,8 +1,9 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { BaseEntity } from 'src/common/entity/base.entity';
-import { Thread as ThreadDB } from '@prisma/client';
+import {  Thread as ThreadDB } from '@prisma/client';
 import { User } from 'src/user/entities/user.entity';
 import { Reply } from 'src/reply/entities/reply.entity';
+import { Like } from './like.entity';
 
 @ObjectType()
 export class Thread extends BaseEntity {
@@ -36,4 +37,7 @@ export class Thread extends BaseEntity {
 
     @Field(() => String, { nullable: true })
     mentionUserId?: ThreadDB['mentionUserId'];
+
+    @Field(() => [Like], {nullable: true})
+    likes?: Like[];
 }

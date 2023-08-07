@@ -1,5 +1,5 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { InputType, Int, Field, ObjectType } from '@nestjs/graphql';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 @InputType()
 export class CreateReplyInput {
@@ -12,4 +12,10 @@ export class CreateReplyInput {
     @IsNotEmpty()
     @Field(() => String)
     threadId: string;
+
+    @IsOptional()
+    @IsString({ each: true })
+    @Field(() => [String], { nullable: true })
+    images?: string[];
 }
+

@@ -10,11 +10,10 @@ export class ThreadService {
 
     public async createThread(data: CreateThreadInput, userId: string) {
         console.log('thread data', data);
-        const {content, image, mentionUserId} = data;
+        const { content, images, mentionUserId } = data;
         if (mentionUserId === '') {
             delete data.mentionUserId;
         }
-
 
         try {
             const thread = await this.prisma.thread.create({
@@ -43,6 +42,7 @@ export class ThreadService {
                 },
                 //TODO : Add pagination
             });
+            console.log(threads);
             return threads;
         } catch (error) {
             throw error;
@@ -73,8 +73,8 @@ export class ThreadService {
                 include: {
                     author: true,
                     replies: true,
-                }
-            })
+                },
+            });
         } catch (error) {
             console.log(error);
         }
@@ -89,12 +89,20 @@ export class ThreadService {
     }
 
     // mutation to add like to thread
-    public async addLikeToThread(threadId: string, userId: string) {
+    public async addLikeToThread(
+        threadId: string,
+        userId: string,
+        replyId: string | null = null,
+    ) {
+        console.log(threadId);
+        console.log(userId);
+        console.log(replyId);
         try {
             const thread = await this.prisma.thread.findFirst({
                 where: {
                     id: threadId,
                 },
+                include: { likes: true },
             });
 
             if (!thread) {
@@ -111,9 +119,66 @@ export class ThreadService {
                     },
                 },
             });
+            console.log(updatedThread);
+            // const newLike = await this.prisma.like.create({
+            //     data: {
+            //         userId,
+            //         threadId,
+            //         replyId,
+            //     },
+            // });
+            // console.log(newLike);
+            await this.addLike(userId, threadId, replyId);
 
+            return { updatedThread };
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    public async removeLikeFromThread(threadId: string, userId: string) {
+        try {
+            const thread = await this.prisma.thread.findFirst({
+                where: {
+                    id: threadId,
+                },
+            });
+
+            if (!thread) {
+                throw new NotFoundException('Thread not found');
+            }
+            const updatedThread = await this.prisma.thread.update({
+                where: {
+                    id: threadId,
+                },
+                data: {
+                    likesCount: {
+                        decrement: 1,
+                    },
+                },
+            });
             return updatedThread;
         } catch (error) {
+            console.log(error);
+        }
+    }
+
+    private async addLike(
+        userId: string,
+        threadId: string,
+        replyId: string | null = null,
+    ) {
+        try {
+            const newLike = await this.prisma.like.create({
+                data: {
+                    userId,
+                    threadId,
+                    replyId
+                },
+            });
+            return newLike;
+        } catch (error) {
+            console.log(error);
             throw error;
         }
     }

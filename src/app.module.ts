@@ -9,6 +9,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
+import { UploaderModule } from './uploader/uploader.module';
 
 @Module({
     imports: [
@@ -48,6 +49,7 @@ import { GraphQLError, GraphQLFormattedError } from 'graphql';
             playground: true,
             csrfPrevention: false,
         }),
+        UploaderModule,
     ],
     controllers: [],
     providers: [],

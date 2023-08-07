@@ -9,13 +9,12 @@ export class CreateThreadInput {
     content: string;
 
     @IsOptional()
-    @IsString()
-    @Field(() => String)
-    image?: string;
+    @IsString({ each: true })
+    @Field(() => [String], { nullable: true })
+    images?: string[];
 
     @IsOptional()
     @IsString()
-    @Field(() => String)
+    @Field(() => String, { nullable: true })
     mentionUserId?: string;
-    
 }

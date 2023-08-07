@@ -1,15 +1,17 @@
 import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { ReplyService } from './reply.service';
 import { Reply } from './entities/reply.entity';
-import { CreateReplyInput } from './dto/create-reply.input';
+import { CreateReplyInput,  } from './dto/create-reply.input';
 import { UpdateReplyInput } from './dto/update-reply.input';
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
+import { UseGuards } from '@nestjs/common';
+import { SessionGuard } from 'src/common/guards/auth.guard';
 
 @Resolver(() => Reply)
 export class ReplyResolver {
     constructor(private readonly replyService: ReplyService) {}
 
-    @Mutation(() => Reply)
+    @Mutation(() => Reply, {name: 'reply'})
     public async createReply(
         @Args('createReplyInput') data: CreateReplyInput,
         @Context() ctx: GqlFastifyContext,
@@ -19,7 +21,7 @@ export class ReplyResolver {
     }
 
     //TODO : Add pagination and check if it should be protected or not
-    @Query(() => [Reply], { name: 'reply' })
+    @Query(() => [Reply], { name: 'allReplies' })
     public async getAllReplies(
         @Args('threadId', { type: () => String }) threadId: string,
     ) {
@@ -39,5 +41,26 @@ export class ReplyResolver {
     @Mutation(() => Reply)
     removeReply(@Args('id', { type: () => Int }) id: number) {
         return this.replyService.remove(id);
+    }
+
+    @UseGuards(SessionGuard)
+    @Mutation(() => Reply)
+    async likeReply(
+        @Args('replyId', { type: () => String }) replyId: string,
+        @Context() ctx: GqlFastifyContext,
+    ) {
+        const user = ctx.req.session.get('user');
+        return await this.replyService.addLikeToReply(replyId, user.id);
+    }
+
+    @UseGuards(SessionGuard)
+    @Mutation(() => Reply)
+    async removeLikeFromReply(
+        @Args('replyId', { type: () => String }) replyId: string,
+        @Context() ctx: GqlFastifyContext,
+    ) {
+        const user = ctx.req.session.get('user');
+        console.log('the remove like is called');
+        return await this.replyService.removeLikeFromReply(replyId, user.id);
     }
 }
