@@ -8,6 +8,11 @@ type AuthResult {
   statusCode: Int
 }
 
+input CreateNotificationInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
 input CreateReplyInput {
   content: String!
   images: [String!]
@@ -53,6 +58,7 @@ type Like {
 }
 
 type Mutation {
+  createNotification(createNotificationInput: CreateNotificationInput!): Notification!
   createThread(createThreadInput: CreateThreadInput!, image: Upload): Thread!
   createUser(createUserInput: CreateUserInput!): User!
   likeReply(replyId: String!): Reply!
@@ -62,13 +68,20 @@ type Mutation {
   register(createUserInput: CreateUserInput!): AuthResult!
   removeLikeFromReply(replyId: String!): Reply!
   removeLikeFromThread(threadId: String!): Thread!
+  removeNotification(id: Int!): Notification!
   removeReply(id: Int!): Reply!
   removeThread(id: Int!): Thread!
   reply(createReplyInput: CreateReplyInput!): Reply!
+  updateNotification(updateNotificationInput: UpdateNotificationInput!): Notification!
   updateReply(updateReplyInput: UpdateReplyInput!): Reply!
   updateThread(updateThreadInput: UpdateThreadInput!): Thread!
   updateUser(values: UpdateUserInput!): Profile!
   uploadFile(file: Upload, values: CreateUploadInput!): UploadResult!
+}
+
+type Notification {
+  """Example field (placeholder)"""
+  exampleField: Int!
 }
 
 type Profile {
@@ -89,8 +102,10 @@ type Profile {
 
 type Query {
   allReplies(threadId: String!): [Reply!]!
+  likes(threadId: String!): Thread!
   me: AuthResult!
   myThreads: [Thread!]!
+  notification(id: Int!): Notification!
   reply(id: String!): Reply!
   thread(id: String!): Thread!
   threads: [Thread!]!
@@ -125,6 +140,12 @@ type Thread {
   replies: [Reply!]
   repliesCount: Int!
   updatedAt: DateTime!
+}
+
+input UpdateNotificationInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
 }
 
 input UpdateReplyInput {

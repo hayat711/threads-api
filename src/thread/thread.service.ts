@@ -9,7 +9,6 @@ export class ThreadService {
     constructor(private readonly prisma: PrismaService) {}
 
     public async createThread(data: CreateThreadInput, userId: string) {
-        console.log('thread data', data);
         const { content, images, mentionUserId } = data;
         if (mentionUserId === '') {
             delete data.mentionUserId;
@@ -42,7 +41,6 @@ export class ThreadService {
                 },
                 //TODO : Add pagination
             });
-            console.log(threads);
             return threads;
         } catch (error) {
             throw error;
@@ -94,9 +92,6 @@ export class ThreadService {
         userId: string,
         replyId: string | null = null,
     ) {
-        console.log(threadId);
-        console.log(userId);
-        console.log(replyId);
         try {
             const thread = await this.prisma.thread.findFirst({
                 where: {
@@ -177,6 +172,30 @@ export class ThreadService {
                 },
             });
             return newLike;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    public async getThreadLikes(threadId: string) {
+        try {
+            const likes = await this.prisma.like.findMany({
+                where: {
+                    threadId,
+                },
+                select: {
+                    id: true,
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            photo: true,         
+                        }
+                    }
+                }
+            });
+            return likes;
         } catch (error) {
             console.log(error);
             throw error;

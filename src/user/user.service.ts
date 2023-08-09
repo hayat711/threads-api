@@ -24,7 +24,6 @@ export class UserService {
                     photo: `https://api.dicebear.com/6.x/initials/svg?seed=${userData.username}`,
                 },
             });
-            console.log('here is the created user --> 👨 ', user);
             return user;
         } catch (error) {
             isPrismaError(error);

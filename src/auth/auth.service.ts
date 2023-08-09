@@ -20,7 +20,6 @@ export class AuthService {
                 statusCode: 200,
                 message: 'User created successfully! Signed up',
             };
-            console.log('the result is --> ', result);
             return result;
         } catch (error) {
             isPrismaError(error);

@@ -27,7 +27,7 @@ export class AuthResolver {
         @Args('credentialsInput') credentialsInput: CredentialsInput,
         @Context() ctx: GqlFastifyContext,
     ) {
-
+        console.log('login called');
         const result = await this.authService.login(credentialsInput);
         ctx.req.session.set('user', result.profile);
         return result;

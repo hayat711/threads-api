@@ -10,25 +10,24 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-
-
 model User {
-    id               String   @id @default(uuid()) @db.VarChar(36)
-    createdAt        DateTime @default(now())
-    updatedAt        DateTime @updatedAt
-    username         String   @unique
+    id               String         @id @default(uuid()) @db.VarChar(36)
+    createdAt        DateTime       @default(now())
+    updatedAt        DateTime       @updatedAt
+    username         String         @unique
     password         String
     bio              String?
     photo            String?
-    verified         Boolean  @default(false)
+    verified         Boolean        @default(false)
     link             String?
-    isPrivate        Boolean  @default(false)
-    threads          Thread[] @relation("ThreadAuthor")
-    mentionedThreads Thread[] @relation("ThreadMentionUser")
-    replies          Reply[]  @relation("ReplyAuthor")
-    likes            Like[]   @relation()
-    followers        Follow[] @relation("Followers")
-    followings       Follow[] @relation("Followings")
+    isPrivate        Boolean        @default(false)
+    threads          Thread[]       @relation("ThreadAuthor")
+    mentionedThreads Thread[]       @relation("ThreadMentionUser")
+    replies          Reply[]        @relation("ReplyAuthor")
+    likes            Like[]         @relation()
+    followers        Follow[]       @relation("Followers")
+    followings       Follow[]       @relation("Followings")
+    notifications    Notification[]
 
     @@index([username], name: "username")
 }
@@ -63,8 +62,12 @@ model Reply {
     likesCount   Int      @default(0)
     repliesCount Int      @default(0)
     thread       Thread   @relation("ThreadReplies", fields: [threadId], references: [id])
+    mention      Boolean? @default(false)
     threadId     String
     likes        Like[]
+    parentId     String?
+    parent       Reply?   @relation("childReplies", fields: [parentId], references: [id])
+    replies      Reply[]  @relation("childReplies")
 }
 
 model Like {
@@ -94,4 +97,16 @@ model Follow {
 
     isBlocked    Boolean @default(false)
     isRestricted Boolean @default(false)
+}
+
+model Notification {
+    id        String   @id @default(uuid()) @db.VarChar(36)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId String
+
+    message String
+    isRead  Boolean @default(false)
 }

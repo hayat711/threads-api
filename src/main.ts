@@ -33,6 +33,7 @@ export async function bootstrap(): Promise<NestFastifyApplication> {
     app.enableCors({
         credentials: true,
         origin: configService.get('FRONTEND_URL'),
+        // origin: '*',
         optionsSuccessStatus: 200,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     });

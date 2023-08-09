@@ -43,7 +43,6 @@ export class ThreadResolver {
             }
         }
         const thread = await this.threadService.createThread(data, user.id);
-        console.log('the created thread to return is ', thread);
         return thread;
     }
 
@@ -98,5 +97,14 @@ export class ThreadResolver {
     ) {
         const user = ctx.req.session.get('user');
         return await this.threadService.removeLikeFromThread(threadId, user.id);
+    }
+
+    @UseGuards(SessionGuard)
+    @Query(() => Thread, { name: 'likes'})
+    async getThreadLikes(
+        @Args('threadId', { type: () => String }) threadId: string,
+        @Context() ctx: GqlFastifyContext,
+    ) {
+        return await this.threadService.getThreadLikes(threadId);
     }
 }

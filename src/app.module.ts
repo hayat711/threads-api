@@ -10,6 +10,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import { UploaderModule } from './uploader/uploader.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
     imports: [
@@ -50,6 +51,7 @@ import { UploaderModule } from './uploader/uploader.module';
             csrfPrevention: false,
         }),
         UploaderModule,
+        NotificationModule,
     ],
     controllers: [],
     providers: [],
