@@ -14,6 +14,7 @@ import { UserInputError } from '@nestjs/apollo';
 import { processRequest } from 'graphql-upload-minimal';
 import { join } from 'path';
 
+
 export async function bootstrap(): Promise<NestFastifyApplication> {
     const app = await NestFactory.create<NestFastifyApplication>(
         AppModule,
@@ -115,6 +116,7 @@ export async function bootstrap(): Promise<NestFastifyApplication> {
             },
         }),
     );
+
 
     const port = Number(configService.get('PORT') || 4000);
     await app.listen(port);

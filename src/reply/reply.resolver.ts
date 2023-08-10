@@ -43,24 +43,5 @@ export class ReplyResolver {
         return this.replyService.remove(id);
     }
 
-    @UseGuards(SessionGuard)
-    @Mutation(() => Reply)
-    async likeReply(
-        @Args('replyId', { type: () => String }) replyId: string,
-        @Context() ctx: GqlFastifyContext,
-    ) {
-        const user = ctx.req.session.get('user');
-        return await this.replyService.addLikeToReply(replyId, user.id);
-    }
-
-    @UseGuards(SessionGuard)
-    @Mutation(() => Reply)
-    async removeLikeFromReply(
-        @Args('replyId', { type: () => String }) replyId: string,
-        @Context() ctx: GqlFastifyContext,
-    ) {
-        const user = ctx.req.session.get('user');
-        console.log('the remove like is called');
-        return await this.replyService.removeLikeFromReply(replyId, user.id);
-    }
+   
 }

@@ -15,7 +15,7 @@ export class CreateReplyInput {
 
     @IsOptional()
     @IsString({ each: true })
-    @Field(() => [String], { nullable: true })
-    images?: string[];
+    @Field(() => String, { nullable: true })
+    image?: string;
 }
 

@@ -8,11 +8,10 @@ export class Like extends BaseEntity {
     @Field(() => String, { nullable: false})
     userId: LikeDB['userId'];
 
+    @Field(() => String, { nullable: true})
+    threadId?: LikeDB['threadId'];
 
     @Field(() => String, { nullable: true})
-    threadId: LikeDB['threadId'];
-
-    @Field(() => String, { nullable: true})
-    replyId: LikeDB['replyId'];
+    replyId?: LikeDB['replyId'];
 
 }

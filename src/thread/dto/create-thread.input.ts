@@ -1,4 +1,4 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType, Int, Field,  } from '@nestjs/graphql';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 @InputType()
@@ -9,12 +9,13 @@ export class CreateThreadInput {
     content: string;
 
     @IsOptional()
-    @IsString({ each: true })
-    @Field(() => [String], { nullable: true })
-    images?: string[];
+    @IsString()
+    @Field(() => String, { nullable: true })
+    image?: string;
 
     @IsOptional()
     @IsString()
     @Field(() => String, { nullable: true })
     mentionUserId?: string;
 }
+

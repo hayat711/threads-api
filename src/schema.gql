@@ -15,13 +15,13 @@ input CreateNotificationInput {
 
 input CreateReplyInput {
   content: String!
-  images: [String!]
+  image: String
   threadId: String!
 }
 
 input CreateThreadInput {
   content: String!
-  images: [String!]
+  image: String
   mentionUserId: String
 }
 
@@ -57,21 +57,29 @@ type Like {
   userId: String!
 }
 
+type MeResult {
+  message: String
+  profile: Profile
+  statusCode: Int
+}
+
 type Mutation {
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
-  createThread(createThreadInput: CreateThreadInput!, image: Upload): Thread!
+  createThread(createThreadInput: CreateThreadInput!): Thread!
   createUser(createUserInput: CreateUserInput!): User!
-  likeReply(replyId: String!): Reply!
-  likeThread(threadId: String!): Thread!
+  likeReply(replyId: String!): Like!
+  likeThread(threadId: String!): Like!
   login(credentialsInput: CredentialsInput!): AuthResult!
   logout: AuthResult!
   register(createUserInput: CreateUserInput!): AuthResult!
-  removeLikeFromReply(replyId: String!): Reply!
-  removeLikeFromThread(threadId: String!): Thread!
+  removeLike(id: Int!): Like!
+  removeLikeFromReply(replyId: String!): Like!
+  removeLikeFromThread(threadId: String!): Like!
   removeNotification(id: Int!): Notification!
   removeReply(id: Int!): Reply!
   removeThread(id: Int!): Thread!
   reply(createReplyInput: CreateReplyInput!): Reply!
+  updateLike(updateLikeInput: UpdateLikeInput!): Like!
   updateNotification(updateNotificationInput: UpdateNotificationInput!): Notification!
   updateReply(updateReplyInput: UpdateReplyInput!): Reply!
   updateThread(updateThreadInput: UpdateThreadInput!): Thread!
@@ -80,8 +88,12 @@ type Mutation {
 }
 
 type Notification {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  """the text of a notification"""
+  content: String!
+  isDismissed: Boolean!
+  isRead: Boolean!
+  user: User!
+  userId: String!
 }
 
 type Profile {
@@ -89,12 +101,13 @@ type Profile {
   createdAt: DateTime!
   id: ID!
   isPrivate: Boolean!
+  likes: [Like]!
   link: String
-  mentionedThreads: [Thread!]
+  mentionedThreads: [Thread]!
   password: String!
   photo: String
-  replies: [Reply!]
-  threads: [Thread!]
+  replies: [Reply]!
+  threads: [Thread]!
   updatedAt: DateTime!
   username: String!
   verified: Boolean!
@@ -102,8 +115,9 @@ type Profile {
 
 type Query {
   allReplies(threadId: String!): [Reply!]!
-  likes(threadId: String!): Thread!
-  me: AuthResult!
+  like(id: Int!): Like!
+  likes(threadId: String!): ThreadLikeDto!
+  me: MeResult!
   myThreads: [Thread!]!
   notification(id: Int!): Notification!
   reply(id: String!): Reply!
@@ -118,8 +132,14 @@ type Reply {
   content: String!
   createdAt: DateTime!
   id: ID!
-  likes: [Like!]
+  image: String
+  likes: [Like]!
   likesCount: Int!
+  mention: Boolean
+  parent: Reply
+  parentId: String
+  replies: [Reply]!
+  repliesCount: Int!
   thread: Thread!
   threadId: String!
   updatedAt: DateTime!
@@ -132,14 +152,26 @@ type Thread {
   createdAt: DateTime!
   id: ID!
   image: String
-  likes: [Like!]
+  likes: [Like]!
   likesCount: Int!
   mention: Boolean
   mentionUserId: String
   mentionUsers: [User!]
-  replies: [Reply!]
+  replies: [Reply]!
   repliesCount: Int!
   updatedAt: DateTime!
+}
+
+type ThreadLikeDto {
+  photo: String!
+  threadId: String!
+  userId: String!
+  username: String!
+}
+
+input UpdateLikeInput {
+  id: Int!
+  threadId: String
 }
 
 input UpdateNotificationInput {
@@ -151,14 +183,14 @@ input UpdateNotificationInput {
 input UpdateReplyInput {
   content: String
   id: Int!
-  images: [String!]
+  image: String
   threadId: String
 }
 
 input UpdateThreadInput {
   content: String
   id: Int!
-  images: [String!]
+  image: String
   mentionUserId: String
 }
 
@@ -188,12 +220,13 @@ type User {
   createdAt: DateTime!
   id: ID!
   isPrivate: Boolean!
+  likes: [Like]!
   link: String
-  mentionedThreads: [Thread!]
+  mentionedThreads: [Thread]!
   password: String!
   photo: String
-  replies: [Reply!]
-  threads: [Thread!]
+  replies: [Reply]!
+  threads: [Thread]!
   updatedAt: DateTime!
   username: String!
   verified: Boolean!

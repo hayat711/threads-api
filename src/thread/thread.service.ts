@@ -9,10 +9,11 @@ export class ThreadService {
     constructor(private readonly prisma: PrismaService) {}
 
     public async createThread(data: CreateThreadInput, userId: string) {
-        const { content, images, mentionUserId } = data;
+        const { content, image, mentionUserId } = data;
         if (mentionUserId === '') {
             delete data.mentionUserId;
         }
+        
 
         try {
             const thread = await this.prisma.thread.create({
@@ -41,6 +42,7 @@ export class ThreadService {
                 },
                 //TODO : Add pagination
             });
+            console.log(threads);
             return threads;
         } catch (error) {
             throw error;
@@ -88,9 +90,9 @@ export class ThreadService {
 
     // mutation to add like to thread
     public async addLikeToThread(
-        threadId: string,
-        userId: string,
-        replyId: string | null = null,
+            threadId: string,
+            userId: string,
+            replyId: string | null = null,
     ) {
         try {
             const thread = await this.prisma.thread.findFirst({

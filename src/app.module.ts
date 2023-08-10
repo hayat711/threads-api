@@ -11,6 +11,7 @@ import { join } from 'path';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import { UploaderModule } from './uploader/uploader.module';
 import { NotificationModule } from './notification/notification.module';
+import { LikeModule } from './like/like.module';
 
 @Module({
     imports: [
@@ -52,6 +53,7 @@ import { NotificationModule } from './notification/notification.module';
         }),
         UploaderModule,
         NotificationModule,
+        LikeModule,
     ],
     controllers: [],
     providers: [],

@@ -2,7 +2,7 @@ import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 import { Auth } from './entities/auth.entity';
 import { CreateUserInput } from 'src/user/dto/create-user.input';
-import { AuthResult, CredentialsInput } from './dto/create-auth.input';
+import { AuthResult, CredentialsInput, MeResult } from './dto/create-auth.input';
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
 import { Session, UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/common/guards/auth.guard';
@@ -34,7 +34,7 @@ export class AuthResolver {
     }
 
     @UseGuards(SessionGuard)
-    @Query(() => AuthResult)
+    @Query(() => MeResult)
     public async me(@Context() ctx: GqlFastifyContext,
         @Session() session: secureSession.Session
     ) {

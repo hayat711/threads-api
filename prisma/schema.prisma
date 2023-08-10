@@ -76,10 +76,10 @@ model Like {
     updatedAt DateTime @updatedAt
     user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     userId    String
-    thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
-    threadId  String
-    reply     Reply    @relation(fields: [replyId], references: [id], onDelete: Cascade)
-    replyId   String
+    thread    Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+    threadId  String?
+    reply     Reply?   @relation(fields: [replyId], references: [id], onDelete: Cascade)
+    replyId   String?
 
     @@unique([userId, threadId])
     @@unique([userId, replyId])
@@ -104,9 +104,9 @@ model Notification {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId String
-
-    message String
-    isRead  Boolean @default(false)
+    user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId      String
+    isDismissed Boolean @default(false)
+    message     String
+    isRead      Boolean @default(false)
 }

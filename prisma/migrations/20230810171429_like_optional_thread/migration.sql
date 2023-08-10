@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Like" ALTER COLUMN "threadId" DROP NOT NULL,
+ALTER COLUMN "replyId" DROP NOT NULL;

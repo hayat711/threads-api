@@ -3,6 +3,7 @@ import { BaseEntity } from 'src/common/entity/base.entity';
 import { User as UserDB } from '@prisma/client';
 import { Thread } from 'src/thread/entities/thread.entity';
 import { Reply } from 'src/reply/entities/reply.entity';
+import { Like } from 'src/like/entities/like.entity';
 
 @ObjectType()
 export class User extends BaseEntity {
@@ -27,14 +28,17 @@ export class User extends BaseEntity {
     @Field(() => Boolean)
     isPrivate: UserDB['isPrivate']
 
-    @Field(() => [Thread], { nullable: true })
+    @Field(() => [Thread], { nullable: 'items' })
     threads: Thread[];
 
-    @Field(() => [Reply], { nullable: true })
+    @Field(() => [Reply], { nullable: 'items' })
     replies: Reply[];
 
-    @Field(() => [Thread], { nullable: true })
+    @Field(() => [Thread], { nullable: 'items' })
     mentionedThreads: Thread[];
+
+    @Field(() => [Like], { nullable: 'items'})
+    likes: Like[];
 }
 
 

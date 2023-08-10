@@ -3,7 +3,7 @@ import { BaseEntity } from 'src/common/entity/base.entity';
 import {  Thread as ThreadDB } from '@prisma/client';
 import { User } from 'src/user/entities/user.entity';
 import { Reply } from 'src/reply/entities/reply.entity';
-import { Like } from './like.entity';
+import { Like } from 'src/like/entities/like.entity';
 
 @ObjectType()
 export class Thread extends BaseEntity {
@@ -20,7 +20,7 @@ export class Thread extends BaseEntity {
     @Field(() => String, { nullable: true })
     image?: ThreadDB['image'];
 
-    @Field(() => [Reply], { nullable: true })
+    @Field(() => [Reply], { nullable: 'items' })
     replies?: Reply[];
 
     @Field(() => Int)
@@ -38,6 +38,23 @@ export class Thread extends BaseEntity {
     @Field(() => String, { nullable: true })
     mentionUserId?: ThreadDB['mentionUserId'];
 
-    @Field(() => [Like], {nullable: true})
+    @Field(() => [Like], {nullable: 'items'})
     likes?: Like[];
+}
+
+
+
+@ObjectType() 
+export class ThreadLikeDto {
+    @Field(() => String)
+    threadId: string;
+
+    @Field(() => String)
+    userId: string;
+
+    @Field(() => String)
+    photo: string;
+
+    @Field(() => String)
+    username: string;
 }

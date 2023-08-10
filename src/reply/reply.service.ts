@@ -48,6 +48,17 @@ export class ReplyService {
                 orderBy: {
                     createdAt: 'asc',
                 },
+                include: {
+                    author: {
+                        select: {
+                            id: true,
+                            bio: true,
+                            isPrivate: true,
+                            photo: true,
+                            username: true
+                        }
+                    }
+                }
             });
             return replies;
         } catch (error) {
@@ -75,69 +86,5 @@ export class ReplyService {
         return `This action removes a #${id} reply`;
     }
 
-    // mutation to add like to reply
-    public async addLikeToReply(replyId: string, userId: string) {
-        try {
-            const reply = await this.prisma.reply.findFirst({
-                where: {
-                    id: replyId,
-                },
-            });
-
-            if (!reply) {
-                throw new NotFoundException('Reply not found');
-            }
-
-            const updatedReply = await this.prisma.reply.update({
-                where: {
-                    id: replyId,
-                },
-                data: {
-                    likesCount: {
-                        increment: 1,
-                    },
-                },
-            });
-
-            const newLike = await this.prisma.like.create({
-                data: {
-                    userId: userId,
-                    replyId: replyId,
-                    threadId: null,
-                },
-            });
-
-            return { updatedReply, newLike };
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    // mutation to remove like from reply
-    public async removeLikeFromReply(replyId: string, userId: string) {
-        try {
-            const reply = await this.prisma.reply.findFirst({
-                where: {
-                    id: replyId,
-                },
-            });
-
-            if (!reply) {
-                throw new NotFoundException('Reply not found');
-            }
-
-            const updatedReply = await this.prisma.reply.update({
-                where: {
-                    id: replyId,
-                },
-                data: {
-                    likesCount: {
-                        decrement: 1,
-                    },
-                },
-            });
-            console.log(updatedReply);
-            return updatedReply;
-        } catch (error) {}
-    }
+   
 }

@@ -1,7 +1,25 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { User } from 'src/user/entities/user.entity';
+import { Notification as NotificationDB } from '@prisma/client';
 
 @ObjectType()
 export class Notification {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+
+    @Field(() => User, { nullable: false })
+    user: User;
+
+    @Field(() => String, { nullable: false })
+    userId: NotificationDB['userId'];
+
+    @Field(() => String, {
+        nullable: false,
+        description: 'the text of a notification',
+    })
+    content: NotificationDB['message'];
+
+    @Field(() => Boolean, { nullable: false })
+    isRead: NotificationDB['isRead'];
+
+    @Field(() => Boolean, { nullable: false })
+    isDismissed: NotificationDB['isDismissed'];
 }

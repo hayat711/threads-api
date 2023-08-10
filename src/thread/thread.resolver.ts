@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { ThreadService } from './thread.service';
-import { Thread } from './entities/thread.entity';
+import { Thread, ThreadLikeDto } from './entities/thread.entity';
 import { CreateThreadInput } from './dto/create-thread.input';
 import { UpdateThreadInput } from './dto/update-thread.input';
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
@@ -21,27 +21,27 @@ export class ThreadResolver {
     @Mutation(() => Thread)
     async createThread(
         @Args('createThreadInput') data: CreateThreadInput,
-        @Args({ name: 'image', type: () => GraphQLUpload, nullable: true })
-        images: FileUpload,
+        // @Args({ name: 'image', type: () => GraphQLUpload, nullable: true })
+        // image: FileUpload,
         @Context() ctx: GqlFastifyContext,
     ) {
         const user = ctx.req.session.get('user');
-        if (images) {
-            const path = join('public', 'uploads');
-            const threadImages = await this.uploaderService.uploadFile(
-                {
-                    name: 'thread images',
-                    desc: 'the thread images',
-                },
-                images,
-                [Mimetype.PNG, Mimetype.JPG],
-            );
-            if (typeof threadImages.url === 'string') {
-                data.images = [threadImages.url]; // Wrap the single URL in an array
-            } else if (Array.isArray(threadImages.url)) {
-                data.images = threadImages.url; // Assign the array of URLs
-            }
-        }
+        // if (image) {
+        //     const path = join('public', 'uploads');
+        //     const threadImages = await this.uploaderService.uploadFile(
+        //         {
+        //             name: 'thread images',
+        //             desc: 'the thread images',
+        //         },
+        //         image,
+        //         [Mimetype.PNG, Mimetype.JPG],
+        //     );
+        //     if (typeof threadImages.url === 'string') {
+        //         data.image = threadImages.url; // Wrap the single URL in an array
+        //     } else if (Array.isArray(threadImages.url)) {
+        //         data.image = threadImages.url; // Assign the array of URLs
+        //     }
+        // }
         const thread = await this.threadService.createThread(data, user.id);
         return thread;
     }
@@ -78,16 +78,16 @@ export class ThreadResolver {
     }
 
     // mutation to add like to thread
-    @UseGuards(SessionGuard)
-    @Mutation(() => Thread)
-    async likeThread(
-        @Args('threadId', { type: () => String }) threadId: string,
-        @Context() ctx: GqlFastifyContext,
-    ) {
-        const user = ctx.req.session.get('user');
-        console.log('add like called')
-        return await this.threadService.addLikeToThread(threadId, user.id);
-    }
+    // @UseGuards(SessionGuard)
+    // @Mutation(() => Thread)
+    // async likeThread(
+    //     @Args('threadId', { type: () => String }) threadId: string,
+    //     @Context() ctx: GqlFastifyContext,
+    // ) {
+    //     const user = ctx.req.session.get('user');
+    //     console.log('add like called')
+    //     return await this.threadService.addLikeToThread(threadId, user.id);
+    // }
 
     @UseGuards(SessionGuard)
     @Mutation(() => Thread)
@@ -100,7 +100,7 @@ export class ThreadResolver {
     }
 
     @UseGuards(SessionGuard)
-    @Query(() => Thread, { name: 'likes'})
+    @Query(() => ThreadLikeDto, { name: 'likes'})
     async getThreadLikes(
         @Args('threadId', { type: () => String }) threadId: string,
         @Context() ctx: GqlFastifyContext,
