@@ -2,11 +2,15 @@ import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 import { Auth } from './entities/auth.entity';
 import { CreateUserInput } from 'src/user/dto/create-user.input';
-import { AuthResult, CredentialsInput, MeResult } from './dto/create-auth.input';
+import {
+    AuthResult,
+    CredentialsInput,
+} from './dto/create-auth.input';
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
 import { Session, UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/common/guards/auth.guard';
 import * as secureSession from '@fastify/secure-session';
+import { MeResult } from './dto/create-profile.dto';
 
 @Resolver('Auth')
 export class AuthResolver {
@@ -35,21 +39,14 @@ export class AuthResolver {
 
     @UseGuards(SessionGuard)
     @Query(() => MeResult)
-    public async me(@Context() ctx: GqlFastifyContext,
-        @Session() session: secureSession.Session
-    ) {
-        const profile = await this.authService.serializeSession(
-            ctx.req.session.get('user'),
-        );
+    public async me(@Context() ctx: GqlFastifyContext) {
+        const user = await ctx.req.session.get('user');
+        const profile = await this.authService.getMe(user.id);
 
-        return {
-            statusCode: 200,
-            message: 'Your profile',
-            profile,
-        };
+        return profile;
     }
 
-    // @UseGuards(SessionGuard)
+    @UseGuards(SessionGuard)
     @Mutation(() => AuthResult)
     public async logout(@Context() ctx: GqlFastifyContext) {
         ctx.req.session.delete();

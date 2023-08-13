@@ -17,5 +17,10 @@ export class CreateThreadInput {
     @IsString()
     @Field(() => String, { nullable: true })
     mentionUserId?: string;
+
+    @IsOptional()
+    @IsString()
+    @Field(() => String, { nullable: true })
+    originalThreadId?: string
 }
 

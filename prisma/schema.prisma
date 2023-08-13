@@ -20,7 +20,7 @@ model User {
     photo            String?
     verified         Boolean        @default(false)
     link             String?
-    isPrivate        Boolean        @default(false)
+    isPrivate        Boolean        @default(true)
     threads          Thread[]       @relation("ThreadAuthor")
     mentionedThreads Thread[]       @relation("ThreadMentionUser")
     replies          Reply[]        @relation("ReplyAuthor")
@@ -33,20 +33,24 @@ model User {
 }
 
 model Thread {
-    id            String   @id @default(uuid()) @db.VarChar(36)
-    createdAt     DateTime @default(now())
-    updatedAt     DateTime @updatedAt
-    content       String
-    author        User     @relation("ThreadAuthor", fields: [authorId], references: [id])
-    authorId      String
-    image         String?
-    replies       Reply[]  @relation("ThreadReplies")
-    repliesCount  Int      @default(0)
-    likesCount    Int      @default(0)
-    mention       Boolean? @default(false)
-    mentionUser   User?    @relation("ThreadMentionUser", fields: [mentionUserId], references: [id])
-    mentionUserId String?
-    likes         Like[]
+    id             String   @id @default(uuid()) @db.VarChar(36)
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+    content        String
+    author         User     @relation("ThreadAuthor", fields: [authorId], references: [id])
+    authorId       String
+    image          String?
+    replies        Reply[]  @relation("ThreadReplies")
+    repliesCount   Int      @default(0)
+    likesCount     Int      @default(0)
+    mention        Boolean? @default(false)
+    mentionUser    User?    @relation("ThreadMentionUser", fields: [mentionUserId], references: [id])
+    mentionUserId  String?
+    likes          Like[]
+    repostedFrom   Thread?  @relation("RepostedThread", fields: [repostedFromId], references: [id])
+    repostedFromId String?
+    reposts        Thread[] @relation("RepostedThread")
+    repostsCount   Int      @default(0)
 
     @@index([authorId], name: "authorId")
 }
@@ -83,6 +87,7 @@ model Like {
 
     @@unique([userId, threadId])
     @@unique([userId, replyId])
+    @@index([userId], name: "userId_index")
 }
 
 model Follow {
@@ -97,6 +102,8 @@ model Follow {
 
     isBlocked    Boolean @default(false)
     isRestricted Boolean @default(false)
+
+    @@unique([followerId, followingId])
 }
 
 model Notification {

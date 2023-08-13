@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateReplyInput, } from './dto/create-reply.input';
+import { CreateReplyInput } from './dto/create-reply.input';
 import { UpdateReplyInput } from './dto/update-reply.input';
 import { PrismaService } from 'src/database/prisma.service';
+import { isPrismaError } from 'src/common/utils';
 
 @Injectable()
 export class ReplyService {
@@ -14,12 +15,8 @@ export class ReplyService {
                 data: {
                     content,
                     threadId,
-                    authorId: userId
-                    // author: {
-                    //     connect: {
-                    //         id: userId,
-                    //     },
-                    // },
+                    authorId: userId,
+                    
                 },
             });
             // increment reply count of the corresponding thread
@@ -39,6 +36,53 @@ export class ReplyService {
         }
     }
 
+    public async replyToParentReply(
+        data: CreateReplyInput,
+        userId: string,
+        parentId: string,
+    ) {
+        try {
+            const { content, threadId } = data;
+
+            const reply = await this.prisma.reply.create({
+                data: {
+                    content,
+                    threadId,
+                    authorId: userId,
+                    parentId,
+                },
+            });
+
+            await this.prisma.thread.update({
+                where: {
+                    id: threadId,
+                },
+                data: {
+                    repliesCount: {
+                        increment: 1,
+                    },
+                },
+            });
+
+            await this.prisma.reply.update({
+                where: {
+                    id: parentId,
+                },
+                data: {
+                    repliesCount: {
+                        increment: 1,
+                    },
+                },
+            });
+            console.log('reply to another reply --->', reply);
+            return reply;
+        } catch (error) {
+            console.log(error);
+            isPrismaError(error);
+            throw error;
+        }
+    }
+
     public async getAllReplies(threadId: string) {
         try {
             const replies = await this.prisma.reply.findMany({
@@ -46,7 +90,7 @@ export class ReplyService {
                     threadId,
                 },
                 orderBy: {
-                    createdAt: 'asc',
+                    createdAt: 'desc',
                 },
                 include: {
                     author: {
@@ -55,10 +99,10 @@ export class ReplyService {
                             bio: true,
                             isPrivate: true,
                             photo: true,
-                            username: true
-                        }
-                    }
-                }
+                            username: true,
+                        },
+                    },
+                },
             });
             return replies;
         } catch (error) {
@@ -85,6 +129,4 @@ export class ReplyService {
     remove(id: number) {
         return `This action removes a #${id} reply`;
     }
-
-   
 }

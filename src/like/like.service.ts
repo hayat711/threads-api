@@ -15,12 +15,12 @@ export class LikeService {
                     thread: {
                         connect: {
                             id: threadId,
-                        }
+                        },
                     },
                     user: {
                         connect: {
                             id: userId,
-                        }
+                        },
                     },
                 },
             });
@@ -28,13 +28,13 @@ export class LikeService {
             await this.prisma.thread.update({
                 where: {
                     id: threadId,
-                }, 
+                },
                 data: {
-                    likesCount: { increment: 1}
-                }
+                    likesCount: { increment: 1 },
+                },
             });
 
-            console.log('crated like ✋',like);
+            console.log('crated like ✋', like);
             return like;
         } catch (error) {
             console.log(error);
@@ -48,16 +48,16 @@ export class LikeService {
                     userId_threadId: {
                         userId,
                         threadId,
-                    }
+                    },
                 },
             });
             await this.prisma.thread.update({
                 where: {
                     id: threadId,
-                }, 
+                },
                 data: {
-                    likesCount: { decrement : 1}
-                }
+                    likesCount: { decrement: 1 },
+                },
             });
             return like;
         } catch (error) {
@@ -70,26 +70,24 @@ export class LikeService {
             const like = await this.prisma.like.create({
                 data: {
                     user: {
-                        connect: { id: userId}
+                        connect: { id: userId },
                     },
                     reply: {
-                        connect: { id: replyId}
-                    }
-                }
+                        connect: { id: replyId },
+                    },
+                },
             });
             await this.prisma.reply.update({
                 where: {
                     id: replyId,
-                }, 
+                },
                 data: {
-                    likesCount: { increment: 1}
-                }
+                    likesCount: { increment: 1 },
+                },
             });
             console.log('created like 🤚', like);
             return like;
-        } catch (error) {
-            
-        }
+        } catch (error) {}
     }
 
     public async removeLikeFromReply(replyId: string, userId: string) {
@@ -99,16 +97,16 @@ export class LikeService {
                     userId_replyId: {
                         userId,
                         replyId,
-                    }
-                }
+                    },
+                },
             });
             await this.prisma.reply.update({
                 where: {
                     id: replyId,
-                }, 
+                },
                 data: {
-                    likesCount: { decrement: 1}
-                }
+                    likesCount: { decrement: 1 },
+                },
             });
             return like;
         } catch (error) {
@@ -116,6 +114,66 @@ export class LikeService {
         }
     }
 
+    public async getUserLikes(userId: string) {
+        try {
+            const likes = await this.prisma.like.findMany({
+                where: {
+                    userId,
+                },
+            });
+            return likes;
+        } catch (error) {}
+    }
+
+    public async getThreadLikes(threadId: string) {
+        try {
+            const likes = await this.prisma.like.findMany({
+                where: {
+                    threadId,
+                },
+                select: {
+                    id: true,
+                    threadId: true,
+                    userId: true,
+                    user: {
+                        select: {
+                            username: true,
+                            photo: true,
+                        },
+                    },
+                },
+            });
+            return likes;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    public async getReplyLikes(replyId: string) {
+        try {
+            const likes = await this.prisma.like.findMany({
+                where: {
+                    replyId,
+                },
+                select: {
+                    id: true,
+                    replyId: true,
+                    userId: true,
+                    user: {
+                        select: {
+                            username: true,
+                            photo: true,
+                        },
+                    },
+                },
+            });
+            return likes;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
     findAll() {
         return `This action returns all like`;
     }

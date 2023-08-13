@@ -12,6 +12,8 @@ import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import { UploaderModule } from './uploader/uploader.module';
 import { NotificationModule } from './notification/notification.module';
 import { LikeModule } from './like/like.module';
+import { FollowModule } from './follow/follow.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
     imports: [
@@ -54,6 +56,8 @@ import { LikeModule } from './like/like.module';
         UploaderModule,
         NotificationModule,
         LikeModule,
+        FollowModule,
+        CloudinaryModule,
     ],
     controllers: [],
     providers: [],

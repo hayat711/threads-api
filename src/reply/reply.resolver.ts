@@ -20,6 +20,18 @@ export class ReplyResolver {
         return await this.replyService.createReply(data, user.id);
     }
 
+
+    @Mutation(() => Reply, {name: 'replyParent'})
+    public async createReplyChild(
+        @Args('createReplyInput') data: CreateReplyInput,
+        @Args('parentId', {type: () => String}) parentId: string,
+
+        @Context() ctx: GqlFastifyContext,
+    ) {
+        const user = await ctx.req.session.get('user');
+        return await this.replyService.replyToParentReply(data, user.id, parentId);
+    }
+
     //TODO : Add pagination and check if it should be protected or not
     @Query(() => [Reply], { name: 'allReplies' })
     public async getAllReplies(

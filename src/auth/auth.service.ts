@@ -6,6 +6,7 @@ import { UserService } from 'src/user/user.service';
 import { isPrismaError } from 'src/common/utils';
 import { InvalidCredentials } from 'src/common/exceptions/invalid-credentials';
 import { User } from '@prisma/client';
+import { MeResult } from './dto/create-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -70,6 +71,25 @@ export class AuthService {
             };
 
             return profile;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    public async getMe(userId: string) {
+        try {
+            const profile = await this.userService.findOneByField(
+                'id',
+                userId,
+            );
+            delete profile.password;
+
+            const result: MeResult = {
+                profile,
+                statusCode: 200,
+                message: 'User profile fetched successfully',
+            };
+            return result;
         } catch (error) {
             throw error;
         }

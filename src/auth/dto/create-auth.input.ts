@@ -34,26 +34,8 @@ type UserProfile = {
     photo: string;
     verified: boolean;
     link: string;
-  };
+};
 
-  type MyProfile = {
-    id: string;
-    createdAt: Date;
-    updatedAt: Date;
-    username: string;
-    password: string;
-    bio: string;
-    photo: string;
-    verified: boolean;
-    link: string;
-    likes: {
-        id: string;
-        threadId?: string
-        replyId?: string
-        userId: string;
-    }
-  };
-  
 
 @ObjectType()
 export class AuthResult {
@@ -63,18 +45,7 @@ export class AuthResult {
     @Field(() => String, { nullable: true })
     message?: string;
 
-    @Field(() => Profile, { nullable: true })   
+    @Field(() => Profile, { nullable: true })
     profile?: UserProfile;
 }
 
-@ObjectType()
-export class MeResult {
-    @Field(() => Int, { nullable: true })
-    statusCode?: number;
-
-    @Field(() => String, { nullable: true })
-    message?: string;
-
-    @Field(() => Profile, { nullable: true })   
-    profile?: MyProfile;
-}

@@ -40,21 +40,18 @@ export class Thread extends BaseEntity {
 
     @Field(() => [Like], {nullable: 'items'})
     likes?: Like[];
+
+    @Field(() => Thread, { nullable: true })
+    repostedFrom?: Thread;
+
+    @Field(() => String, { nullable: true})
+    repostedFromId?: string;
+
+    @Field(() => [Thread], { nullable: 'items' })
+    reposts?: Thread[];
+
+    @Field(() => Int)
+    repostsCount: ThreadDB['repostsCount'];
 }
 
 
-
-@ObjectType() 
-export class ThreadLikeDto {
-    @Field(() => String)
-    threadId: string;
-
-    @Field(() => String)
-    userId: string;
-
-    @Field(() => String)
-    photo: string;
-
-    @Field(() => String)
-    username: string;
-}

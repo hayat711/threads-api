@@ -14,7 +14,7 @@ export class UserResolver {
         return this.userService.create(createUserInput);
     }
 
-    @Query(() => User, { name: 'user' })
+    @Query(() => Profile, { name: 'user' })
     getUser(@Args('field') field: string, @Args('value') value: string) {
         try {
             return this.userService.findOneByField(field, value, {

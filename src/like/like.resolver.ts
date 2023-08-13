@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { LikeService } from './like.service';
-import { Like } from './entities/like.entity';
+import { Like, ReplyLikeDto, ThreadLikeDto } from './entities/like.entity';
 import { CreateLikeThread } from './dto/create-like.input';
 import { UpdateLikeInput } from './dto/update-like.input';
 import { UseGuards } from '@nestjs/common';
@@ -49,6 +49,36 @@ export class LikeResolver {
     ) {
         const user = await ctx.req.session.get('user');
         return this.likeService.removeLikeFromReply(replyId, user.id);
+    }
+
+
+    @UseGuards(SessionGuard)
+    @Query(() => [Like], { name: 'userLikes'})
+    async getUserLikes(@Context() ctx: GqlFastifyContext) {
+        const user = await ctx.req.session.get('user');
+        return this.likeService.getUserLikes(user.id);
+    }
+
+    @UseGuards(SessionGuard)
+    @Query(() => [ThreadLikeDto], { name: 'threadLikes'})
+    async getThreadLikes(
+        @Args('threadId', { type: () => String }) threadId: string,
+    ) {
+        const likes = await this.likeService.getThreadLikes(threadId);
+        return likes;
+    
+    }
+
+
+    @UseGuards(SessionGuard)
+    @Query(() => [ReplyLikeDto], { name: 'replyLikes'})
+    async getReplyLikes(
+        @Args('replyId', { type: () => String }) replyId: string,
+        @Context() ctx: GqlFastifyContext,
+    ) {
+        const likes = await this.likeService.getReplyLikes(replyId);
+        return likes;
+    
     }
 
     @Query(() => [Like], { name: 'like' })

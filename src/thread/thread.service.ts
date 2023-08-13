@@ -1,27 +1,67 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    Injectable,
+    NotFoundException,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { CreateThreadInput } from './dto/create-thread.input';
 import { UpdateThreadInput } from './dto/update-thread.input';
 import { PrismaService } from 'src/database/prisma.service';
 import { isPrismaError } from 'src/common/utils';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class ThreadService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly cloudinaryService: CloudinaryService,
+    ) {}
 
     public async createThread(data: CreateThreadInput, userId: string) {
-        const { content, image, mentionUserId } = data;
+        const { content, image, mentionUserId, originalThreadId } = data;
         if (mentionUserId === '') {
             delete data.mentionUserId;
         }
-        
+
+        if (image && image !== '') {
+            try {
+                const uri = await this.cloudinaryService.uploadImage(image);
+                if (uri) {
+                    data.image = uri;
+                }
+            } catch (error) {
+                console.log('unable to upload image to cloud');
+            }
+        }
 
         try {
-            const thread = await this.prisma.thread.create({
-                data: {
-                    ...data,
-                    authorId: userId,
-                },
-            });
+            let thread;
+            if (originalThreadId) {
+                // Re-posting: create a new thread that references the original thread
+                thread = await this.prisma.thread.create({
+                    data: {
+                        author: { connect: { id: userId } },
+                        repostedFrom: { connect: { id: originalThreadId } },
+                        content,
+                    },
+                });
+
+                // increment repost count of the original thread
+                await this.prisma.thread.update({
+                    where: {
+                        id: originalThreadId,
+                    },
+                    data: {
+                        repostsCount: { increment: 1 },
+                    },
+                });
+            } else {
+                thread = await this.prisma.thread.create({
+                    data: {
+                        ...data,
+                        authorId: userId,
+                    },
+                });
+            }
             return thread;
         } catch (error) {
             console.log('error in creating thread', error);
@@ -42,9 +82,10 @@ export class ThreadService {
                 },
                 //TODO : Add pagination
             });
-            console.log(threads);
             return threads;
         } catch (error) {
+            console.log('error in getting thread', error);
+            isPrismaError(error);
             throw error;
         }
     }
@@ -57,6 +98,8 @@ export class ThreadService {
                 },
             });
         } catch (error) {
+            throw error;
+            isPrismaError(error);
             throw error;
         }
     }
@@ -77,6 +120,29 @@ export class ThreadService {
             });
         } catch (error) {
             console.log(error);
+            isPrismaError(error);
+            throw error;
+        }
+    }
+
+    public async getSingleUserThreads(userId: string) {
+        try {
+            return await this.prisma.thread.findMany({
+                where: {
+                    authorId: userId,
+                },
+                orderBy: {
+                    createdAt: 'desc',
+                },
+                include: {
+                    author: true,
+                    replies: true,
+                },
+            });
+        } catch (error) {
+            console.log(error);
+            isPrismaError(error);
+            throw error;
         }
     }
 
@@ -84,122 +150,57 @@ export class ThreadService {
         return `This action updates a #${id} thread`;
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} thread`;
-    }
-
-    // mutation to add like to thread
-    public async addLikeToThread(
-            threadId: string,
-            userId: string,
-            replyId: string | null = null,
-    ) {
+    public async remove(threadId: string, userId: string) {
         try {
             const thread = await this.prisma.thread.findFirst({
                 where: {
                     id: threadId,
-                },
-                include: { likes: true },
-            });
-
-            if (!thread) {
-                throw new NotFoundException('Thread not found');
-            }
-
-            const updatedThread = await this.prisma.thread.update({
-                where: {
-                    id: threadId,
-                },
-                data: {
-                    likesCount: {
-                        increment: 1,
-                    },
-                },
-            });
-            console.log(updatedThread);
-            // const newLike = await this.prisma.like.create({
-            //     data: {
-            //         userId,
-            //         threadId,
-            //         replyId,
-            //     },
-            // });
-            // console.log(newLike);
-            await this.addLike(userId, threadId, replyId);
-
-            return { updatedThread };
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    public async removeLikeFromThread(threadId: string, userId: string) {
-        try {
-            const thread = await this.prisma.thread.findFirst({
-                where: {
-                    id: threadId,
-                },
-            });
-
-            if (!thread) {
-                throw new NotFoundException('Thread not found');
-            }
-            const updatedThread = await this.prisma.thread.update({
-                where: {
-                    id: threadId,
-                },
-                data: {
-                    likesCount: {
-                        decrement: 1,
-                    },
-                },
-            });
-            return updatedThread;
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    private async addLike(
-        userId: string,
-        threadId: string,
-        replyId: string | null = null,
-    ) {
-        try {
-            const newLike = await this.prisma.like.create({
-                data: {
-                    userId,
-                    threadId,
-                    replyId
-                },
-            });
-            return newLike;
-        } catch (error) {
-            console.log(error);
-            throw error;
-        }
-    }
-
-    public async getThreadLikes(threadId: string) {
-        try {
-            const likes = await this.prisma.like.findMany({
-                where: {
-                    threadId,
                 },
                 select: {
                     id: true,
-                    user: {
-                        select: {
-                            id: true,
-                            username: true,
-                            photo: true,         
-                        }
-                    }
+                    authorId: true,
                 }
             });
-            return likes;
+
+            if (!thread) {
+                throw new NotFoundException('Thread not found');
+            }
+
+            if (thread.authorId !== userId) {
+                throw new UnauthorizedException('Unauthorized for this action');
+            }
+
+            const threadWithReplies = await this.prisma.thread.findFirst({
+                where: {
+                    id: threadId,
+                },
+                include: {
+                    replies: true
+                }
+            });
+
+            // delete associated replies first
+            if (threadWithReplies && threadWithReplies.replies && threadWithReplies.replies.length > 0) {
+                await Promise.all(threadWithReplies.replies.map ( async (reply) => {
+                    await this.prisma.reply.delete({
+                        where: {
+                            id : reply.id
+                        },
+                    });
+                }));
+            }
+
+            // delete the thread
+            await this.prisma.thread.delete({
+                where: {
+                    id: threadId,
+                },
+            });
+
+            return thread.id;
         } catch (error) {
             console.log(error);
+            isPrismaError(error);
             throw error;
         }
     }

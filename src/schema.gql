@@ -23,6 +23,7 @@ input CreateThreadInput {
   content: String!
   image: String
   mentionUserId: String
+  originalThreadId: String
 }
 
 input CreateUploadInput {
@@ -48,6 +49,28 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+type Follow {
+  createdAt: DateTime!
+  follower: User!
+  followerId: String!
+  following: User!
+  followingId: String!
+  id: ID!
+  isBlocked: Boolean!
+  isRestricted: Boolean!
+  updatedAt: DateTime!
+}
+
+type Follower {
+  photo: String
+  userId: String!
+  username: String!
+}
+
+type GetFollowResponse {
+  follow: [Follower!]!
+}
+
 type Like {
   createdAt: DateTime!
   id: ID!
@@ -59,7 +82,7 @@ type Like {
 
 type MeResult {
   message: String
-  profile: Profile
+  profile: MyProfile!
   statusCode: Int
 }
 
@@ -67,6 +90,8 @@ type Mutation {
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
   createThread(createThreadInput: CreateThreadInput!): Thread!
   createUser(createUserInput: CreateUserInput!): User!
+  deleteThread(threadId: String!): String!
+  followUser(followingId: String!): Follow!
   likeReply(replyId: String!): Like!
   likeThread(threadId: String!): Like!
   login(credentialsInput: CredentialsInput!): AuthResult!
@@ -77,14 +102,27 @@ type Mutation {
   removeLikeFromThread(threadId: String!): Like!
   removeNotification(id: Int!): Notification!
   removeReply(id: Int!): Reply!
-  removeThread(id: Int!): Thread!
   reply(createReplyInput: CreateReplyInput!): Reply!
+  replyParent(createReplyInput: CreateReplyInput!, parentId: String!): Reply!
+  unFollowUser(followingId: String!): Follow!
   updateLike(updateLikeInput: UpdateLikeInput!): Like!
   updateNotification(updateNotificationInput: UpdateNotificationInput!): Notification!
   updateReply(updateReplyInput: UpdateReplyInput!): Reply!
   updateThread(updateThreadInput: UpdateThreadInput!): Thread!
   updateUser(values: UpdateUserInput!): Profile!
   uploadFile(file: Upload, values: CreateUploadInput!): UploadResult!
+}
+
+type MyProfile {
+  bio: String
+  createdAt: DateTime!
+  id: String!
+  isPrivate: Boolean!
+  link: String
+  photo: String
+  updatedAt: DateTime!
+  username: String!
+  verified: Boolean!
 }
 
 type Notification {
@@ -115,15 +153,23 @@ type Profile {
 
 type Query {
   allReplies(threadId: String!): [Reply!]!
+  checkFollow(followingId: String!): Boolean!
+  getMyFollowers: [GetFollowResponse!]!
+  getMyFollowings: [GetFollowResponse!]!
+  getUserFollowers(userId: String!): [GetFollowResponse!]!
+  getUserFollowings(userId: String!): [GetFollowResponse!]!
+  getUserThreads(userId: String!): [Thread!]!
   like(id: Int!): Like!
-  likes(threadId: String!): ThreadLikeDto!
   me: MeResult!
   myThreads: [Thread!]!
   notification(id: Int!): Notification!
   reply(id: String!): Reply!
-  thread(id: String!): Thread!
+  replyLikes(replyId: String!): [ReplyLikeDto!]!
+  thread(threadId: String!): Thread!
+  threadLikes(threadId: String!): [ThreadLikeDto!]!
   threads: [Thread!]!
-  user(field: String!, value: String!): User!
+  user(field: String!, value: String!): Profile!
+  userLikes: [Like!]!
 }
 
 type Reply {
@@ -145,6 +191,13 @@ type Reply {
   updatedAt: DateTime!
 }
 
+type ReplyLikeDto {
+  id: String!
+  replyId: String!
+  user: User!
+  userId: String!
+}
+
 type Thread {
   author: User!
   authorId: String!
@@ -159,14 +212,18 @@ type Thread {
   mentionUsers: [User!]
   replies: [Reply]!
   repliesCount: Int!
+  repostedFrom: Thread
+  repostedFromId: String
+  reposts: [Thread]!
+  repostsCount: Int!
   updatedAt: DateTime!
 }
 
 type ThreadLikeDto {
-  photo: String!
+  id: String!
   threadId: String!
+  user: User!
   userId: String!
-  username: String!
 }
 
 input UpdateLikeInput {
@@ -192,6 +249,7 @@ input UpdateThreadInput {
   id: Int!
   image: String
   mentionUserId: String
+  originalThreadId: String
 }
 
 input UpdateUserInput {
