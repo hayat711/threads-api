@@ -9,11 +9,9 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
-import { UploaderModule } from './uploader/uploader.module';
 import { NotificationModule } from './notification/notification.module';
 import { LikeModule } from './like/like.module';
 import { FollowModule } from './follow/follow.module';
-import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
     imports: [
@@ -52,12 +50,11 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
             introspection: true,
             playground: true,
             csrfPrevention: false,
+          
         }),
-        UploaderModule,
         NotificationModule,
         LikeModule,
         FollowModule,
-        CloudinaryModule,
     ],
     controllers: [],
     providers: [],

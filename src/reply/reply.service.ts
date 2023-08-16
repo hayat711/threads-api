@@ -10,13 +10,13 @@ export class ReplyService {
 
     public async createReply(data: CreateReplyInput, userId: string) {
         try {
-            const { content, threadId } = data;
+            const { content, threadId, parentId, image } = data;
             const reply = await this.prisma.reply.create({
                 data: {
                     content,
                     threadId,
                     authorId: userId,
-                    
+                    image,
                 },
             });
             // increment reply count of the corresponding thread
@@ -32,6 +32,8 @@ export class ReplyService {
             });
             return reply;
         } catch (error) {
+            console.log(error);
+            isPrismaError(error);
             throw error;
         }
     }
@@ -42,7 +44,21 @@ export class ReplyService {
         parentId: string,
     ) {
         try {
-            const { content, threadId } = data;
+            const { content } = data;
+            // fetch parent reply
+            const parentReply = await this.prisma.reply.findUnique({
+                where: {
+                    id: parentId,
+                },
+                include: {
+                    thread: true,
+                },
+            });
+            if (!parentReply) {
+                throw new Error('Parent reply not found.');
+            }
+
+            const threadId = parentReply.threadId;
 
             const reply = await this.prisma.reply.create({
                 data: {
@@ -74,7 +90,6 @@ export class ReplyService {
                     },
                 },
             });
-            console.log('reply to another reply --->', reply);
             return reply;
         } catch (error) {
             console.log(error);
@@ -88,6 +103,7 @@ export class ReplyService {
             const replies = await this.prisma.reply.findMany({
                 where: {
                     threadId,
+                    parentId: null,
                 },
                 orderBy: {
                     createdAt: 'desc',
@@ -103,13 +119,45 @@ export class ReplyService {
                         },
                     },
                 },
+                take: 20,
             });
             return replies;
         } catch (error) {
+            console.log(error.message);
+            isPrismaError(error);
             throw error;
         }
     }
 
+    public async getParentReplies(parentId: string) {
+        try {
+            const replies = await this.prisma.reply.findMany({
+                where: {
+                    parentId,
+                },
+                orderBy: {
+                    createdAt: 'desc',
+                },
+                include: {
+                    author: {
+                        select: {
+                            id: true,
+                            bio: true,
+                            isPrivate: true,
+                            photo: true,
+                            username: true,
+                        },
+                    },
+                },
+                take: 20,
+            });
+            return replies;
+        } catch (error) {
+            console.log(error.message);
+            isPrismaError(error);
+            throw error;
+        }
+    }
     public async getReply(id: string) {
         try {
             return await this.prisma.reply.findFirst({
@@ -118,15 +166,9 @@ export class ReplyService {
                 },
             });
         } catch (error) {
+            console.log(error.message);
+            isPrismaError(error);
             throw error;
         }
-    }
-
-    update(id: number, updateReplyInput: UpdateReplyInput) {
-        return `This action updates a #${id} reply`;
-    }
-
-    remove(id: number) {
-        return `This action removes a #${id} reply`;
     }
 }

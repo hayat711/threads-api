@@ -8,8 +8,8 @@ import { User } from 'src/user/entities/user.entity';
 @ObjectType()
 export class Reply extends BaseEntity {
     
-    @Field(() => String)
-    content: ReplyDB['content'];
+    @Field(() => String, { nullable: true})
+    content?: ReplyDB['content'];
 
     @Field(() => User)
     author: User;

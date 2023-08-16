@@ -1,13 +1,25 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
-import { IsNotEmpty, IsOptional, IsString, Length, NotContains } from 'class-validator';
+import {
+    IsNotEmpty,
+    IsOptional,
+    IsString,
+    Length,
+    MinLength,
+    NotContains,
+} from 'class-validator';
 
 @InputType()
 export class CreateUserInput {
- 
-  @IsString()
-  @Field(() => String, {description: 'username must be unique'})
+    @IsString()
+    @Field(() => String, { description: 'username must be unique' })
     username: string;
 
+    @IsString()
+    @Length(2, 255, {
+        message: 'name must be between 2 and 255 characters',
+    })
+    @Field(() => String, {nullable: true ,description: 'name must be 2 or more characters' })
+    name?: string;
 
     @IsNotEmpty({ message: 'Password is required' })
     @NotContains(' ', { message: 'Password cannot contain spaces' })
@@ -27,5 +39,4 @@ export class CreateUserInput {
 
     @IsOptional()
     photo?: string;
-
 }

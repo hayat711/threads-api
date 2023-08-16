@@ -8,9 +8,12 @@ import { Like } from 'src/like/entities/like.entity';
 @ObjectType()
 export class Thread extends BaseEntity {
     
-    @Field(() => String)
-    content: ThreadDB['content'];
+    @Field(() => String, { nullable: true})
+    content?: ThreadDB['content'];
 
+    @Field(() => String, { nullable: true})
+    quoteContent?: ThreadDB['quoteContent'];
+     
     @Field(() => User)
     author: User;
 

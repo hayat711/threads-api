@@ -3,65 +3,31 @@ import {
     NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common';
-import { CreateThreadInput } from './dto/create-thread.input';
+import {
+    CreateThreadInput,
+    RePostThreadInput,
+} from './dto/create-thread.input';
 import { UpdateThreadInput } from './dto/update-thread.input';
 import { PrismaService } from 'src/database/prisma.service';
 import { isPrismaError } from 'src/common/utils';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class ThreadService {
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly cloudinaryService: CloudinaryService,
-    ) {}
+    constructor(private readonly prisma: PrismaService) {}
 
     public async createThread(data: CreateThreadInput, userId: string) {
-        const { content, image, mentionUserId, originalThreadId } = data;
+        const { content, image, mentionUserId } = data;
         if (mentionUserId === '') {
             delete data.mentionUserId;
         }
 
-        if (image && image !== '') {
-            try {
-                const uri = await this.cloudinaryService.uploadImage(image);
-                if (uri) {
-                    data.image = uri;
-                }
-            } catch (error) {
-                console.log('unable to upload image to cloud');
-            }
-        }
-
         try {
-            let thread;
-            if (originalThreadId) {
-                // Re-posting: create a new thread that references the original thread
-                thread = await this.prisma.thread.create({
-                    data: {
-                        author: { connect: { id: userId } },
-                        repostedFrom: { connect: { id: originalThreadId } },
-                        content,
-                    },
-                });
-
-                // increment repost count of the original thread
-                await this.prisma.thread.update({
-                    where: {
-                        id: originalThreadId,
-                    },
-                    data: {
-                        repostsCount: { increment: 1 },
-                    },
-                });
-            } else {
-                thread = await this.prisma.thread.create({
-                    data: {
-                        ...data,
-                        authorId: userId,
-                    },
-                });
-            }
+            const thread = await this.prisma.thread.create({
+                data: {
+                    ...data,
+                    authorId: userId,
+                },
+            });
             return thread;
         } catch (error) {
             console.log('error in creating thread', error);
@@ -70,16 +36,111 @@ export class ThreadService {
         }
     }
 
+    public async rePostThread(data: RePostThreadInput, userId: string) {
+        const { originalThreadId, quoteContent } = data;
+        try {
+            const originalThread = await this.prisma.thread.findFirst({
+                where: {
+                    id: originalThreadId,
+                },
+                select: {
+                    id: true,
+                    repostsCount: true,
+                },
+            });
+
+            if (!originalThread) {
+                throw new NotFoundException('Original Thread not found');
+            }
+
+            let thread;
+
+            if (quoteContent) {
+                // Quoting: create a new thread with the quote content reference to original thread
+                thread = await this.prisma.thread.create({
+                    data: {
+                        author: { connect: { id: userId } },
+                        repostedFrom: { connect: { id: originalThreadId } },
+                        quoteContent,
+                    },
+                });
+            } else {
+                //Re-posting:
+                thread = await this.prisma.thread.create({
+                    data: {
+                        author: { connect: { id: userId } },
+                        repostedFrom: { connect: { id: originalThreadId } },
+                    },
+                });
+                // increment re-post count of the original thread
+                await this.prisma.thread.update({
+                    where: {
+                        id: originalThreadId,
+                    },
+                    data: {
+                        repostsCount: { increment: 1 },
+                    },
+                });
+            }
+            return thread;
+        } catch (error) {
+            console.log('error in re-posting thread', error);
+            isPrismaError(error);
+            throw error;
+        }
+    }
     public async getAllThreads() {
         try {
             const threads = await this.prisma.thread.findMany({
                 include: {
-                    author: true,
-                    replies: true,
+                    author: {
+                        select: {
+                            id: true,
+                            username: true,
+                            photo: true,
+                        },
+                    },
+                    replies: {
+                        select: {
+                            id: true,
+                            repliesCount: true,
+                            image: true,
+                            authorId: true,
+                            content: true,
+                            likesCount: true,
+                        },
+                    },
+                    repostedFrom: {
+                        select: {
+                            id: true,
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    photo: true,
+                                },
+                            },
+                            content: true,
+                            createdAt: true,
+                            updatedAt: true,
+                            image: true,
+                            likesCount: true,
+                            repostsCount: true,
+                            repostedFrom: {
+                                select: {
+                                    id: true,
+                                    authorId: true,
+                                    content: true,
+                                    createdAt: true,
+                                },
+                            },
+                        },
+                    },
                 },
                 orderBy: {
                     createdAt: 'desc',
                 },
+                take: 20,
                 //TODO : Add pagination
             });
             return threads;
@@ -106,20 +167,64 @@ export class ThreadService {
 
     public async getUserThreads(userId: string) {
         try {
-            return await this.prisma.thread.findMany({
+            const threads = await this.prisma.thread.findMany({
                 where: {
                     authorId: userId,
+                },
+                include: {
+                    author: {
+                        select: {
+                            id: true,
+                            username: true,
+                            photo: true,
+                        },
+                    },
+                    replies: {
+                        select: {
+                            id: true,
+                            repliesCount: true,
+                            image: true,
+                            authorId: true,
+                            content: true,
+                            likesCount: true,
+                        },
+                    },
+                    repostedFrom: {
+                        select: {
+                            id: true,
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    photo: true,
+                                },
+                            },
+                            content: true,
+                            createdAt: true,
+                            updatedAt: true,
+                            image: true,
+                            likesCount: true,
+                            repostsCount: true,
+                            repostedFrom: {
+                                select: {
+                                    id: true,
+                                    authorId: true,
+                                    content: true,
+                                    createdAt: true,
+                                },
+                            },
+                        },
+                    },
                 },
                 orderBy: {
                     createdAt: 'desc',
                 },
-                include: {
-                    author: true,
-                    replies: true,
-                },
+                take: 20,
+                //TODO : Add pagination
             });
+            return threads;
         } catch (error) {
-            console.log(error);
+            console.log('error in getting user threads', error);
             isPrismaError(error);
             throw error;
         }
@@ -127,18 +232,62 @@ export class ThreadService {
 
     public async getSingleUserThreads(userId: string) {
         try {
-            return await this.prisma.thread.findMany({
+            const threads = await this.prisma.thread.findMany({
                 where: {
                     authorId: userId,
+                },
+                include: {
+                    author: {
+                        select: {
+                            id: true,
+                            username: true,
+                            photo: true,
+                        },
+                    },
+                    replies: {
+                        select: {
+                            id: true,
+                            repliesCount: true,
+                            image: true,
+                            authorId: true,
+                            content: true,
+                            likesCount: true,
+                        },
+                    },
+                    repostedFrom: {
+                        select: {
+                            id: true,
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    photo: true,
+                                },
+                            },
+                            content: true,
+                            createdAt: true,
+                            updatedAt: true,
+                            image: true,
+                            likesCount: true,
+                            repostsCount: true,
+                            repostedFrom: {
+                                select: {
+                                    id: true,
+                                    authorId: true,
+                                    content: true,
+                                    createdAt: true,
+                                },
+                            },
+                        },
+                    },
                 },
                 orderBy: {
                     createdAt: 'desc',
                 },
-                include: {
-                    author: true,
-                    replies: true,
-                },
+                take: 20,
+                //TODO : Add pagination
             });
+            return threads;
         } catch (error) {
             console.log(error);
             isPrismaError(error);
@@ -159,7 +308,7 @@ export class ThreadService {
                 select: {
                     id: true,
                     authorId: true,
-                }
+                },
             });
 
             if (!thread) {
@@ -175,19 +324,25 @@ export class ThreadService {
                     id: threadId,
                 },
                 include: {
-                    replies: true
-                }
+                    replies: true,
+                },
             });
 
             // delete associated replies first
-            if (threadWithReplies && threadWithReplies.replies && threadWithReplies.replies.length > 0) {
-                await Promise.all(threadWithReplies.replies.map ( async (reply) => {
-                    await this.prisma.reply.delete({
-                        where: {
-                            id : reply.id
-                        },
-                    });
-                }));
+            if (
+                threadWithReplies &&
+                threadWithReplies.replies &&
+                threadWithReplies.replies.length > 0
+            ) {
+                await Promise.all(
+                    threadWithReplies.replies.map(async (reply) => {
+                        await this.prisma.reply.delete({
+                            where: {
+                                id: reply.id,
+                            },
+                        });
+                    }),
+                );
             }
 
             // delete the thread

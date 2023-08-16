@@ -7,6 +7,7 @@ import { GqlFastifyContext } from 'src/common/types/graphql.types';
 import { UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/common/guards/auth.guard';
 
+@UseGuards(SessionGuard)
 @Resolver(() => Reply)
 export class ReplyResolver {
     constructor(private readonly replyService: ReplyService) {}
@@ -36,8 +37,17 @@ export class ReplyResolver {
     @Query(() => [Reply], { name: 'allReplies' })
     public async getAllReplies(
         @Args('threadId', { type: () => String }) threadId: string,
+
     ) {
         return await this.replyService.getAllReplies(threadId);
+    }
+
+    @Query(() => [Reply], { name: 'parentReplies' })
+    public async getParentReplies(
+        @Args('parentId', { type: () => String }) parentId: string,
+
+    ) {
+        return await this.replyService.getParentReplies(parentId);
     }
 
     @Query(() => Reply, { name: 'reply' })
@@ -45,15 +55,6 @@ export class ReplyResolver {
         return await this.replyService.getReply(id);
     }
 
-    @Mutation(() => Reply)
-    updateReply(@Args('updateReplyInput') updateReplyInput: UpdateReplyInput) {
-        return this.replyService.update(updateReplyInput.id, updateReplyInput);
-    }
-
-    @Mutation(() => Reply)
-    removeReply(@Args('id', { type: () => Int }) id: number) {
-        return this.replyService.remove(id);
-    }
-
+    
    
 }

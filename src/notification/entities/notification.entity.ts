@@ -4,7 +4,6 @@ import { Notification as NotificationDB } from '@prisma/client';
 
 @ObjectType()
 export class Notification {
-
     @Field(() => User, { nullable: false })
     user: User;
 
@@ -22,4 +21,7 @@ export class Notification {
 
     @Field(() => Boolean, { nullable: false })
     isDismissed: NotificationDB['isDismissed'];
+
+    @Field(() => String, { nullable: false })
+    type: NotificationDB['type'];
 }

@@ -9,30 +9,31 @@ type AuthResult {
 }
 
 input CreateNotificationInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  isDismissed: Boolean!
+  isRead: Boolean!
+  type: NotificationType!
 }
 
 input CreateReplyInput {
-  content: String!
+  content: String
   image: String
+  parentId: String
   threadId: String!
 }
 
 input CreateThreadInput {
-  content: String!
+  content: String
   image: String
   mentionUserId: String
   originalThreadId: String
-}
-
-input CreateUploadInput {
-  desc: String!
-  name: String!
+  quoteContent: String
 }
 
 input CreateUserInput {
   bio: String
+
+  """name must be 2 or more characters"""
+  name: String
   password: String!
 
   """username must be unique"""
@@ -92,25 +93,23 @@ type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
   deleteThread(threadId: String!): String!
   followUser(followingId: String!): Follow!
+  likeParentReply(parentId: String!): Like!
   likeReply(replyId: String!): Like!
   likeThread(threadId: String!): Like!
   login(credentialsInput: CredentialsInput!): AuthResult!
   logout: AuthResult!
+  rePostThread(rePostThreadInput: RePostThreadInput!): Thread!
   register(createUserInput: CreateUserInput!): AuthResult!
-  removeLike(id: Int!): Like!
   removeLikeFromReply(replyId: String!): Like!
   removeLikeFromThread(threadId: String!): Like!
   removeNotification(id: Int!): Notification!
-  removeReply(id: Int!): Reply!
+  removeParentLike(parentId: String!): Like!
   reply(createReplyInput: CreateReplyInput!): Reply!
   replyParent(createReplyInput: CreateReplyInput!, parentId: String!): Reply!
   unFollowUser(followingId: String!): Follow!
-  updateLike(updateLikeInput: UpdateLikeInput!): Like!
   updateNotification(updateNotificationInput: UpdateNotificationInput!): Notification!
-  updateReply(updateReplyInput: UpdateReplyInput!): Reply!
   updateThread(updateThreadInput: UpdateThreadInput!): Thread!
   updateUser(values: UpdateUserInput!): Profile!
-  uploadFile(file: Upload, values: CreateUploadInput!): UploadResult!
 }
 
 type MyProfile {
@@ -130,8 +129,18 @@ type Notification {
   content: String!
   isDismissed: Boolean!
   isRead: Boolean!
+  type: String!
   user: User!
   userId: String!
+}
+
+enum NotificationType {
+  MENTIONS
+  POST
+  QUOTES
+  REPLIES
+  REPOSTS
+  REQUESTS
 }
 
 type Profile {
@@ -142,6 +151,7 @@ type Profile {
   likes: [Like]!
   link: String
   mentionedThreads: [Thread]!
+  name: String
   password: String!
   photo: String
   replies: [Reply]!
@@ -159,10 +169,10 @@ type Query {
   getUserFollowers(userId: String!): [GetFollowResponse!]!
   getUserFollowings(userId: String!): [GetFollowResponse!]!
   getUserThreads(userId: String!): [Thread!]!
-  like(id: Int!): Like!
   me: MeResult!
   myThreads: [Thread!]!
   notification(id: Int!): Notification!
+  parentReplies(parentId: String!): [Reply!]!
   reply(id: String!): Reply!
   replyLikes(replyId: String!): [ReplyLikeDto!]!
   thread(threadId: String!): Thread!
@@ -172,10 +182,15 @@ type Query {
   userLikes: [Like!]!
 }
 
+input RePostThreadInput {
+  originalThreadId: String!
+  quoteContent: String
+}
+
 type Reply {
   author: User!
   authorId: String!
-  content: String!
+  content: String
   createdAt: DateTime!
   id: ID!
   image: String
@@ -201,7 +216,7 @@ type ReplyLikeDto {
 type Thread {
   author: User!
   authorId: String!
-  content: String!
+  content: String
   createdAt: DateTime!
   id: ID!
   image: String
@@ -210,6 +225,7 @@ type Thread {
   mention: Boolean
   mentionUserId: String
   mentionUsers: [User!]
+  quoteContent: String
   replies: [Reply]!
   repliesCount: Int!
   repostedFrom: Thread
@@ -226,22 +242,11 @@ type ThreadLikeDto {
   userId: String!
 }
 
-input UpdateLikeInput {
-  id: Int!
-  threadId: String
-}
-
 input UpdateNotificationInput {
-  """Example field (placeholder)"""
-  exampleField: Int
   id: Int!
-}
-
-input UpdateReplyInput {
-  content: String
-  id: Int!
-  image: String
-  threadId: String
+  isDismissed: Boolean
+  isRead: Boolean
+  type: NotificationType
 }
 
 input UpdateThreadInput {
@@ -250,6 +255,7 @@ input UpdateThreadInput {
   image: String
   mentionUserId: String
   originalThreadId: String
+  quoteContent: String
 }
 
 input UpdateUserInput {
@@ -257,20 +263,12 @@ input UpdateUserInput {
   id: String!
   isPrivate: Boolean
   link: String
+
+  """name must be 2 or more characters"""
+  name: String
   password: String
   photo: String
   username: String
-}
-
-"""The `Upload` scalar type represents a file upload."""
-scalar Upload
-
-type UploadResult {
-  desc: String
-  imageFormatted: String
-  imageRaw: String
-  name: String
-  url: String
 }
 
 type User {
@@ -281,6 +279,7 @@ type User {
   likes: [Like]!
   link: String
   mentionedThreads: [Thread]!
+  name: String
   password: String!
   photo: String
   replies: [Reply]!

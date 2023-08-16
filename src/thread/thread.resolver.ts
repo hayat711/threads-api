@@ -1,7 +1,7 @@
 import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { ThreadService } from './thread.service';
 import { Thread } from './entities/thread.entity';
-import { CreateThreadInput } from './dto/create-thread.input';
+import { CreateThreadInput, RePostThreadInput } from './dto/create-thread.input';
 import { UpdateThreadInput } from './dto/update-thread.input';
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
 import { UseGuards } from '@nestjs/common';
@@ -19,6 +19,21 @@ export class ThreadResolver {
     ) {
         const user = ctx.req.session.get('user');
         const thread = await this.threadService.createThread(data, user.id);
+        return thread;
+    }
+
+    @UseGuards(SessionGuard)
+    @Mutation(() => Thread, { name: 'rePostThread'})
+    async rePostThread(
+        @Args('rePostThreadInput')
+        data: RePostThreadInput,
+        @Context() ctx: GqlFastifyContext,
+    ) {
+        const user = ctx.req.session.get('user');
+        const thread = await this.threadService.rePostThread(
+            data,
+            user.id,
+        );
         return thread;
     }
 

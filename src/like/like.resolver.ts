@@ -1,8 +1,6 @@
 import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { LikeService } from './like.service';
 import { Like, ReplyLikeDto, ThreadLikeDto } from './entities/like.entity';
-import { CreateLikeThread } from './dto/create-like.input';
-import { UpdateLikeInput } from './dto/update-like.input';
 import { UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/common/guards/auth.guard';
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
@@ -42,6 +40,16 @@ export class LikeResolver {
     }
 
     @UseGuards(SessionGuard)
+    @Mutation(() => Like, { name: 'likeParentReply'})
+    async likeParentReply(
+        @Args('parentId', { type: () => String }) parentId: string,
+        @Context() ctx: GqlFastifyContext,
+    ) {
+        const user = await ctx.req.session.get('user');
+        return this.likeService.addLikeToParentReply(parentId, user.id);
+    }
+
+    @UseGuards(SessionGuard)
     @Mutation(() => Like)
     async removeLikeFromReply(
         @Args('replyId', { type: () => String }) replyId: string,
@@ -49,6 +57,16 @@ export class LikeResolver {
     ) {
         const user = await ctx.req.session.get('user');
         return this.likeService.removeLikeFromReply(replyId, user.id);
+    }
+
+    @UseGuards(SessionGuard)
+    @Mutation(() => Like, {name: 'removeParentLike'})
+    async removeLikeFromParentReply(
+        @Args('parentId', { type: () => String }) parentId: string,
+        @Context() ctx: GqlFastifyContext,
+    ) {
+        const user = await ctx.req.session.get('user');
+        return this.likeService.removeLikeFromParentReply(parentId, user.id);
     }
 
 
@@ -81,23 +99,5 @@ export class LikeResolver {
     
     }
 
-    @Query(() => [Like], { name: 'like' })
-    findAll() {
-        return this.likeService.findAll();
-    }
-
-    @Query(() => Like, { name: 'like' })
-    findOne(@Args('id', { type: () => Int }) id: number) {
-        return this.likeService.findOne(id);
-    }
-
-    @Mutation(() => Like)
-    updateLike(@Args('updateLikeInput') updateLikeInput: UpdateLikeInput) {
-        return this.likeService.update(updateLikeInput.id, updateLikeInput);
-    }
-
-    @Mutation(() => Like)
-    removeLike(@Args('id', { type: () => Int }) id: number) {
-        return this.likeService.remove(id);
-    }
+  
 }

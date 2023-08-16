@@ -4,9 +4,9 @@ import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 @InputType()
 export class CreateReplyInput {
     @IsString()
-    @IsNotEmpty()
-    @Field(() => String)
-    content: string;
+    @IsOptional()
+    @Field(() => String, { nullable: true})
+    content?: string;
 
     @IsString()
     @IsNotEmpty()
@@ -17,5 +17,10 @@ export class CreateReplyInput {
     @IsString({ each: true })
     @Field(() => String, { nullable: true })
     image?: string;
+
+    @IsOptional()
+    @IsString({ each: true })
+    @Field(() => String, { nullable: true })
+    parentId?: string;
 }
 

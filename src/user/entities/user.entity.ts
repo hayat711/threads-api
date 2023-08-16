@@ -10,6 +10,9 @@ export class User extends BaseEntity {
     @Field(() => String)
     username: UserDB['username'];
 
+    @Field(() => String, { nullable: true})
+    name?: UserDB['username'];
+
     @Field(() => String)
     password: UserDB['password'];
 

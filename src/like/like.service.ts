@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { CreateLikeThread } from './dto/create-like.input';
-import { UpdateLikeInput } from './dto/update-like.input';
 import { PrismaService } from 'src/database/prisma.service';
+import { isPrismaError } from 'src/common/utils';
 
 @Injectable()
 export class LikeService {
     constructor(private readonly prisma: PrismaService) {}
 
     public async addLikeToThread(threadId: string, userId: string) {
-        console.log('i am called ', userId);
         try {
             const like = await this.prisma.like.create({
                 data: {
@@ -34,7 +32,6 @@ export class LikeService {
                 },
             });
 
-            console.log('crated like ✋', like);
             return like;
         } catch (error) {
             console.log(error);
@@ -86,8 +83,46 @@ export class LikeService {
                 },
             });
             console.log('created like 🤚', like);
-            return like;
-        } catch (error) {}
+            return like.id;
+        } catch (error) {
+            console.log(error);
+            isPrismaError(error);
+            throw Error;
+        }
+    }
+
+    public async addLikeToParentReply(parentId: string, userId: string) {
+        try {
+            const like = await this.prisma.like.create({
+                data: {
+                    user: {
+                        connect: { id: userId },
+                    },
+                    reply: {
+                        connect: {
+                            id: parentId,
+                        },
+                    },
+                },
+            });
+
+            // update the likes count for the parent reply
+
+            await this.prisma.reply.update({
+                where: {
+                    id: parentId,
+                },
+                data: {
+                    likesCount: { increment: 1 },
+                },
+            });
+            console.log('created parent reply like 👍 ', like);
+            return like.id;
+        } catch (error) {
+            console.log(error);
+            isPrismaError(error);
+            throw Error;
+        }
     }
 
     public async removeLikeFromReply(replyId: string, userId: string) {
@@ -108,9 +143,37 @@ export class LikeService {
                     likesCount: { decrement: 1 },
                 },
             });
-            return like;
+            return like.id;
         } catch (error) {
             console.log(error);
+            isPrismaError(error);
+            throw Error;
+        }
+    }
+
+    public async removeLikeFromParentReply(parentId: string, userId: string) {
+        try {
+            const like = await this.prisma.like.delete({
+                where: {
+                    userId_replyId: {
+                        userId,
+                        replyId: parentId,
+                    },
+                },
+            });
+            await this.prisma.reply.update({
+                where: {
+                    id: parentId,
+                },
+                data: {
+                    likesCount: { decrement: 1 },
+                },
+            });
+            return like.id;
+        } catch (error) {
+            console.log(error);
+            isPrismaError(error);
+            throw Error;
         }
     }
 
@@ -146,7 +209,8 @@ export class LikeService {
             return likes;
         } catch (error) {
             console.log(error);
-            throw error;
+            isPrismaError(error);
+            throw Error;
         }
     }
 
@@ -171,22 +235,10 @@ export class LikeService {
             return likes;
         } catch (error) {
             console.log(error);
-            throw error;
+            isPrismaError(error);
+            throw Error;
+
         }
     }
-    findAll() {
-        return `This action returns all like`;
-    }
-
-    findOne(id: number) {
-        return `This action returns a #${id} like`;
-    }
-
-    update(id: number, updateLikeInput: UpdateLikeInput) {
-        return `This action updates a #${id} like`;
-    }
-
-    remove(id: number) {
-        return `This action removes a #${id} like`;
-    }
+   
 }

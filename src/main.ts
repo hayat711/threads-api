@@ -33,6 +33,7 @@ export async function bootstrap(): Promise<NestFastifyApplication> {
     const { key1, key2 } = keys;
     app.enableCors({
         credentials: true,
+        // origin: true,
         origin: configService.get('FRONTEND_URL'),
         optionsSuccessStatus: 200,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

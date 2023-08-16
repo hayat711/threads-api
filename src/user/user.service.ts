@@ -21,7 +21,6 @@ export class UserService {
                 data: {
                     ...userData,
                     password: await hash(userData.password),
-                    photo: `https://api.dicebear.com/6.x/initials/svg?seed=${userData.username}`,
                 },
             });
             return user;
@@ -76,8 +75,10 @@ export class UserService {
                 where: {
                     id: userId,
                 },
-                //@ts-ignore
-                data: values,
+
+                data: {
+                    ...values,
+                },
             });
 
             return user;
