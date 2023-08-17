@@ -24,17 +24,22 @@ export class FollowService {
 
     public async unFollowUser(followingId: string, followerId: string) {
         try {
-            const follow = await this.prisma.follow.deleteMany({
+            const follow = await this.prisma.follow.delete({
                 where: {
-                    following: {
-                        id: followingId,
-                    },
-                    follower: {
-                        id: followerId,
+                    followerId_followingId: {
+                        followingId,
+                        followerId,
                     },
                 },
+                select: {
+                    id: true,
+                },
             });
-            return follow;
+            if (follow) {
+                return follow;
+            } else {
+                throw new Error('Follow record not found.');
+            }
         } catch (error) {
             console.log('error in deleting follow', error);
             isPrismaError(error);
@@ -65,14 +70,24 @@ export class FollowService {
         try {
             const followers = await this.prisma.follow.findMany({
                 where: {
-                    followerId: userId,
+                    followingId: userId,
                 },
                 include: {
-                    following: true,
+                    following: {
+                        select: {
+                            id: true,
+                            username: true,
+                            photo: true,
+                        },
+                    },
                 },
             });
-            console.log('here is teh followers ', followers);
-            return followers;
+            const validFollowers = followers.map((follower) => ({
+                userId: follower.following.id,
+                username: follower.following.username,
+                photo: follower.following.photo || '', // Provide a default value if photo is null
+            }));
+            return validFollowers;
         } catch (error) {
             console.log('error in getting followers', error);
             isPrismaError(error);
@@ -82,16 +97,28 @@ export class FollowService {
 
     public async getMyFollowings(userId: string) {
         try {
-            const followers = await this.prisma.follow.findMany({
+            const followings = await this.prisma.follow.findMany({
                 where: {
-                    followingId: userId,
+                    followerId: userId,
                 },
                 include: {
-                    follower: true,
+                    follower: {
+                        select: {
+                            id: true,
+                            username: true,
+                            photo: true,
+                        },
+                    },
                 },
             });
-            console.log('here is teh followers ', followers);
-            return followers;
+            const validFollowings = followings.map((follower) => ({
+                userId: follower.follower.id,
+                username: follower.follower.username,
+                photo: follower.follower.photo || '',
+            }));
+            return validFollowings;
+
+            
         } catch (error) {
             console.log('error in getting followers', error);
             isPrismaError(error);
@@ -106,11 +133,22 @@ export class FollowService {
                     followingId: userId,
                 },
                 include: {
-                    follower: true,
+                    follower: {
+                        select: {
+                            id: true,
+                            username: true,
+                            photo: true,
+                        },
+                    },
                 },
             });
-            console.log('here is teh followers ', followers);
-            return followers;
+
+            const validFollowers = followers.map((follower) => ({
+                userId: follower.follower.id,
+                username: follower.follower.username,
+                photo: follower.follower.photo || '',
+            }));
+            return validFollowers;
         } catch (error) {
             console.log('error in getting followers', error);
             isPrismaError(error);
@@ -125,11 +163,21 @@ export class FollowService {
                     followerId: userId,
                 },
                 include: {
-                    following: true,
+                    following: {
+                        select: {
+                            id: true,
+                            username: true,
+                            photo: true,
+                        },
+                    },
                 },
             });
-            console.log('here is teh followers ', followers);
-            return followers;
+            const validFollowings = followers.map((follower) => ({
+                userId: follower.following.id,
+                username: follower.following.username,
+                photo: follower.following.photo || '', // Provide a default value if photo is null
+            }));
+            return validFollowings;
         } catch (error) {
             console.log('error in getting followers', error);
             isPrismaError(error);

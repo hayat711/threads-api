@@ -22,22 +22,14 @@ export class Follow extends BaseEntity {
     isRestricted: boolean;
 }
 
-
-
 @ObjectType()
-export class Follower {
+export class FollowResponse {
     @Field(() => String)
     userId: string;
 
     @Field(() => String)
     username: string;
 
-    @Field(() => String, { nullable: true }) 
+    @Field(() => String, { nullable: true })
     photo: string | null;
-}
-
-@ObjectType()
-export class GetFollowResponse {
-    @Field(() => [Follower])
-    follow: Follower[];
 }

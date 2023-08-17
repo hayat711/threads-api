@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { FollowService } from './follow.service';
-import { Follow, GetFollowResponse } from './entities/follow.entity';
+import { Follow, FollowResponse } from './entities/follow.entity';
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
 import { UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/common/guards/auth.guard';
@@ -15,7 +15,6 @@ export class FollowResolver {
         @Context() ctx: GqlFastifyContext,
     ) {
         const user = await ctx.req.session.get('user');
-        console.log('want to follow this user ', followingId);
         return this.followService.followUser(followingId, user.id);
     }
 
@@ -30,7 +29,7 @@ export class FollowResolver {
     }
 
     @UseGuards(SessionGuard)
-    @Query(() => Boolean)
+    @Query(() => Boolean, { name: 'checkFollow' })
     async checkFollow(
         @Args('followingId', { type: () => String }) followingId: string,
         @Context() ctx: GqlFastifyContext,
@@ -40,33 +39,34 @@ export class FollowResolver {
     }
 
     @UseGuards(SessionGuard)
-    @Query(() => [GetFollowResponse], { name: 'getMyFollowers' })
+    @Query(() => [FollowResponse], { name: 'getMyFollowers' })
     async getMyFollowers(@Context() ctx: GqlFastifyContext) {
         const user = await ctx.req.session.get('user');
         return this.followService.getMyFollowers(user.id);
     }
 
     @UseGuards(SessionGuard)
-    @Query(() => [GetFollowResponse], { name: 'getMyFollowings' })
+    @Query(() => [FollowResponse], { name: 'getMyFollowings' })
     async getMyFollowings(@Context() ctx: GqlFastifyContext) {
         const user = await ctx.req.session.get('user');
         return this.followService.getMyFollowings(user.id);
     }
 
     @UseGuards(SessionGuard)
-    @Query(() => [GetFollowResponse], { name: 'getUserFollowers' })
+    @Query(() => [FollowResponse], { name: 'getUserFollowers' })
     async getUserFollowers(
         @Args('userId', { type: () => String }) userId: string,
     ) {
         return this.followService.getUserFollowers(userId);
     }
-    
+
     @UseGuards(SessionGuard)
-    @Query(() => [GetFollowResponse], { name: 'getUserFollowings' })
+    @Query(() => [FollowResponse], { name: 'getUserFollowings' })
     async getUserFollowings(
         @Args('userId', { type: () => String }) userId: string,
     ) {
-
-        return this.followService.getUserFollowings(userId);
+        const followings = await this.followService.getUserFollowings(userId);
+        console.log(followings);
+        return followings;
     }
 }

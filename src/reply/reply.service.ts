@@ -3,10 +3,18 @@ import { CreateReplyInput } from './dto/create-reply.input';
 import { UpdateReplyInput } from './dto/update-reply.input';
 import { PrismaService } from 'src/database/prisma.service';
 import { isPrismaError } from 'src/common/utils';
+import * as DataLoader from 'dataloader';
+import { Thread, User } from '@prisma/client';
 
 @Injectable()
 export class ReplyService {
-    constructor(private readonly prisma: PrismaService) {}
+    private threadLoader: DataLoader<string, Thread>;
+    private authorLoader: DataLoader<string, User>;
+
+    constructor(private readonly prisma: PrismaService) {
+        this.authorLoader = new DataLoader<string, User>(this.batchAuthors);
+        this.threadLoader = new DataLoader<string, Thread>(this.batchThreads);
+    }
 
     public async createReply(data: CreateReplyInput, userId: string) {
         try {
@@ -129,6 +137,31 @@ export class ReplyService {
         }
     }
 
+    public getRepliesWithThread = async (authorId: string) => {
+        try {
+            const replies = await this.prisma.reply.findMany({
+                where: {
+                    authorId: authorId,
+                },
+                orderBy: {
+                    createdAt: 'desc',
+                }
+            });
+            const repliesWithDetails = await Promise.all(
+                replies.map(async (reply) => ({
+                    ...reply,
+                    author: await this.authorLoader.load(reply.authorId),
+                    thread: await this.threadLoader.load(reply.threadId),
+                })),
+            );
+
+            return repliesWithDetails;
+        } catch (error) {
+            console.log(error.message);
+            isPrismaError(error);
+            throw error;
+        }
+    };
     public async getParentReplies(parentId: string) {
         try {
             const replies = await this.prisma.reply.findMany({
@@ -171,4 +204,51 @@ export class ReplyService {
             throw error;
         }
     }
+
+    private batchAuthors = async (ids: string[]) => {
+        try {
+            const authors = await this.prisma.user.findMany({
+                where: {
+                    id: {
+                        in: ids,
+                    },
+                },
+            });
+
+            return ids.map((id) => authors.find((author) => author.id === id));
+        } catch (error) {
+            console.log(error);
+            isPrismaError(error);
+            throw error;
+        }
+    };
+
+    private batchThreads = async (ids: string[]) => {
+        try {
+            const threads = await this.prisma.thread.findMany({
+                where: {
+                    id: {
+                        in: ids,
+                    },
+                },
+                include: {
+                    author: {
+                        select: {
+                            id: true,
+                            username: true,
+                            photo: true,
+                            bio: true,
+                            isPrivate: true,
+                        },
+                    },
+                },
+            });
+
+            return ids.map((id) => threads.find((thread) => thread.id === id));
+        } catch (error) {
+            console.log(error);
+            isPrismaError(error);
+            throw error;
+        }
+    };
 }

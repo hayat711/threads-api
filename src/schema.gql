@@ -62,14 +62,10 @@ type Follow {
   updatedAt: DateTime!
 }
 
-type Follower {
+type FollowResponse {
   photo: String
   userId: String!
   username: String!
-}
-
-type GetFollowResponse {
-  follow: [Follower!]!
 }
 
 type Like {
@@ -108,7 +104,6 @@ type Mutation {
   replyParent(createReplyInput: CreateReplyInput!, parentId: String!): Reply!
   unFollowUser(followingId: String!): Follow!
   updateNotification(updateNotificationInput: UpdateNotificationInput!): Notification!
-  updateThread(updateThreadInput: UpdateThreadInput!): Thread!
   updateUser(values: UpdateUserInput!): Profile!
 }
 
@@ -164,15 +159,16 @@ type Profile {
 type Query {
   allReplies(threadId: String!): [Reply!]!
   checkFollow(followingId: String!): Boolean!
-  getMyFollowers: [GetFollowResponse!]!
-  getMyFollowings: [GetFollowResponse!]!
-  getUserFollowers(userId: String!): [GetFollowResponse!]!
-  getUserFollowings(userId: String!): [GetFollowResponse!]!
+  getMyFollowers: [FollowResponse!]!
+  getMyFollowings: [FollowResponse!]!
+  getUserFollowers(userId: String!): [FollowResponse!]!
+  getUserFollowings(userId: String!): [FollowResponse!]!
   getUserThreads(userId: String!): [Thread!]!
   me: MeResult!
   myThreads: [Thread!]!
   notification(id: Int!): Notification!
   parentReplies(parentId: String!): [Reply!]!
+  repliesWithThread(authorId: String!): [Reply!]!
   reply(id: String!): Reply!
   replyLikes(replyId: String!): [ReplyLikeDto!]!
   thread(threadId: String!): Thread!
@@ -247,15 +243,6 @@ input UpdateNotificationInput {
   isDismissed: Boolean
   isRead: Boolean
   type: NotificationType
-}
-
-input UpdateThreadInput {
-  content: String
-  id: Int!
-  image: String
-  mentionUserId: String
-  originalThreadId: String
-  quoteContent: String
 }
 
 input UpdateUserInput {

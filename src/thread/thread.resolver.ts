@@ -1,8 +1,10 @@
 import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
 import { ThreadService } from './thread.service';
 import { Thread } from './entities/thread.entity';
-import { CreateThreadInput, RePostThreadInput } from './dto/create-thread.input';
-import { UpdateThreadInput } from './dto/update-thread.input';
+import {
+    CreateThreadInput,
+    RePostThreadInput,
+} from './dto/create-thread.input';
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
 import { UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/common/guards/auth.guard';
@@ -23,24 +25,22 @@ export class ThreadResolver {
     }
 
     @UseGuards(SessionGuard)
-    @Mutation(() => Thread, { name: 'rePostThread'})
+    @Mutation(() => Thread, { name: 'rePostThread' })
     async rePostThread(
         @Args('rePostThreadInput')
         data: RePostThreadInput,
         @Context() ctx: GqlFastifyContext,
     ) {
         const user = ctx.req.session.get('user');
-        const thread = await this.threadService.rePostThread(
-            data,
-            user.id,
-        );
+        const thread = await this.threadService.rePostThread(data, user.id);
         return thread;
     }
 
     //? TODO : Add pagination and check if it should be protected or not
     @Query(() => [Thread], { name: 'threads' })
     public async getAllThreads() {
-        return await this.threadService.getAllThreads();
+        const threads = await this.threadService.getAllThreads();      
+        return threads;
     }
 
     @Query(() => [Thread], { name: 'myThreads' })
@@ -63,16 +63,6 @@ export class ThreadResolver {
     ) {
         const thread = await this.threadService.getSingleUserThreads(userId);
         return thread;
-    }
-
-    @Mutation(() => Thread)
-    updateThread(
-        @Args('updateThreadInput') updateThreadInput: UpdateThreadInput,
-    ) {
-        return this.threadService.update(
-            updateThreadInput.id,
-            updateThreadInput,
-        );
     }
 
     @UseGuards(SessionGuard)
