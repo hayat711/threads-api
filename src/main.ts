@@ -29,12 +29,19 @@ export async function bootstrap(): Promise<NestFastifyApplication> {
         key1: configService.get('SESSION_KEY1'),
         key2: configService.get('SESSION_KEY2'),
     };
-
     const { key1, key2 } = keys;
     app.enableCors({
         credentials: true,
-        // origin: true,
         origin: configService.get('FRONTEND_URL'),
+        // origin: ['http://localhost:19006', "http://192.168.45.4:19006"],
+        allowedHeaders: [
+            'Access-Control-Allow-Origin',
+            'Origin',
+            'X-Requested-With',
+            'Accept',
+            'Content-Type',
+            'Authorization'
+        ],
         optionsSuccessStatus: 200,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     });

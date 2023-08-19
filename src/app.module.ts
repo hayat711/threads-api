@@ -24,6 +24,11 @@ import { FollowModule } from './follow/follow.module';
         ThreadModule,
         ReplyModule,
         GraphQLModule.forRoot<ApolloDriverConfig>({
+            //@ts-ignore
+            cors: {
+                credentials: true,
+                origin: true,
+            },
             driver: ApolloDriver,
             autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
             sortSchema: true,
@@ -50,7 +55,6 @@ import { FollowModule } from './follow/follow.module';
             introspection: true,
             playground: true,
             csrfPrevention: false,
-          
         }),
         NotificationModule,
         LikeModule,

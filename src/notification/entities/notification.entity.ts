@@ -14,7 +14,7 @@ export class Notification {
         nullable: false,
         description: 'the text of a notification',
     })
-    content: NotificationDB['message'];
+    message: NotificationDB['message'];
 
     @Field(() => Boolean, { nullable: false })
     isRead: NotificationDB['isRead'];

@@ -1,19 +1,20 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
 
 import { registerEnumType } from '@nestjs/graphql';
+import { NotificationType } from '@prisma/client';
 
-export enum NotificationType {
-    POST = 'post',
-    REPLIES = 'replies',
-    REQUESTS = 'requests',
-    MENTIONS = 'mentions',
-    QUOTES = 'quotes',
-    REPOSTS = 'reposts',
-}
+// export enum NotificationType {
+//     POST = 'post',
+//     REPLIES = 'replies',
+//     REQUESTS = 'requests',
+//     MENTIONS = 'mentions',
+//     QUOTES = 'quotes',
+//     REPOSTS = 'reposts',
+// }
 
-registerEnumType(NotificationType, {
-    name: 'NotificationType',
-});
+// registerEnumType(NotificationType, {
+//     name: 'NotificationType',
+// });
 
 
 @InputType()
