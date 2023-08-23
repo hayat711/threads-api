@@ -66,7 +66,19 @@ export class FollowResolver {
         @Args('userId', { type: () => String }) userId: string,
     ) {
         const followings = await this.followService.getUserFollowings(userId);
-        console.log(followings);
         return followings;
     }
+
+    @UseGuards(SessionGuard)
+    @Mutation(() => Boolean, { name: 'confirmFollowReq'})
+    async confirmFollowReq(
+        @Args('followerId', { type: () => String }) followerId: string,
+        @Context() ctx: GqlFastifyContext,
+    ) : Promise<boolean>{
+        const user = await ctx.req.session.get('user');
+        const res =  this.followService.followUser(followerId, user.id)
+        return !!res;
+    }
+
+  
 }

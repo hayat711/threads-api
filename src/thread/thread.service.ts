@@ -190,7 +190,7 @@ export class ThreadService {
         }
     }
 
-    public async getAllThreads() {
+    public async getAllThreads(offset?:number, limit?: number) {
         try {
             const threads = await this.prisma.thread.findMany({
                 include: {
@@ -210,6 +210,13 @@ export class ThreadService {
                             authorId: true,
                             content: true,
                             likesCount: true,
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    photo: true,
+                                }
+                            }
                         },
                     },
                     repostedFrom: {
@@ -242,8 +249,8 @@ export class ThreadService {
                 orderBy: {
                     createdAt: 'desc',
                 },
-                take: 20,
-                //TODO : Add pagination
+                take: limit,
+                skip: offset,
             });
 
             // await and resolve Dataloader calls
@@ -268,6 +275,23 @@ export class ThreadService {
             return threads;
         } catch (error) {
             console.log('error in getting thread', error);
+            isPrismaError(error);
+            throw error;
+        }
+    }
+
+    public async getFeed(offset?: number, limit?: number) {
+        try {
+            const threads = await this.prisma.thread.findMany({
+                orderBy: {
+                    createdAt: 'desc'
+                },
+                take: limit,
+                skip: offset,
+            });
+            return threads;
+        } catch (error) {
+            console.log(error);
             isPrismaError(error);
             throw error;
         }
@@ -310,6 +334,13 @@ export class ThreadService {
                             authorId: true,
                             content: true,
                             likesCount: true,
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    photo: true,
+                                }
+                            }
                         },
                     },
                     repostedFrom: {
@@ -376,6 +407,13 @@ export class ThreadService {
                             authorId: true,
                             content: true,
                             likesCount: true,
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    photo: true,
+                                }
+                            }
                         },
                     },
                     repostedFrom: {

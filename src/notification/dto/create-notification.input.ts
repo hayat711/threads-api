@@ -12,9 +12,9 @@ import { NotificationType } from '@prisma/client';
 //     REPOSTS = 'reposts',
 // }
 
-// registerEnumType(NotificationType, {
-//     name: 'NotificationType',
-// });
+registerEnumType(NotificationType, {
+    name: 'NotificationType',
+});
 
 
 @InputType()

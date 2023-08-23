@@ -3,6 +3,7 @@ import { CreateNotificationInput } from './dto/create-notification.input';
 import { PrismaService } from 'src/database/prisma.service';
 import { isPrismaError } from 'src/common/utils';
 import { NotificationType } from '@prisma/client';
+import { Notification } from './entities/notification.entity';
 
 @Injectable()
 export class NotificationService {
@@ -47,13 +48,18 @@ export class NotificationService {
         }
     };
 
-    public async getNotification(receiverId: string) {
+    public async getNotifications(
+        receiverId: string,
+        type?: NotificationType,
+    ){
         try {
-            const notification = await this.prisma.notification.findFirst({
+            const actualType = type ?? NotificationType.ALL;
+            const notifications = await this.prisma.notification.findMany({
                 where: {
                     user: {
                         id: receiverId,
                     },
+                    type: actualType,
                 },
                 include: {
                     user: {
@@ -66,7 +72,33 @@ export class NotificationService {
                     },
                 },
             });
-            return notification;
+            return notifications;
+        } catch (error) {
+            console.log(error);
+            isPrismaError(error);
+            throw error;
+        }
+    }
+
+    public async followRequest(followingId: string, userId: string) {
+        try {
+            const followRequest = await this.prisma.notification.create({
+                data: {
+                    message: 'You have a new follow request 🔔',
+                    user: {
+                        connect: {
+                            id: followingId,
+                        },
+                    },
+                    sender: {
+                        connect: {
+                            id: userId,
+                        },
+                    },
+                    type: NotificationType.REQUESTS,
+                },
+            });
+            return followRequest;
         } catch (error) {
             console.log(error);
             isPrismaError(error);

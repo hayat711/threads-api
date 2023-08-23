@@ -40,12 +40,16 @@ export class ReplyResolver {
     @Query(() => [Reply], { name: 'allReplies' })
     public async getAllReplies(
         @Args('threadId', { type: () => String }) threadId: string,
+        @Args('limit', {type: () => Int , nullable: true}) limit?: number,
+        @Args('offset', {type: () => Int, nullable: true}) offset?: number,
     ) {
-        return await this.replyService.getAllReplies(threadId);
+        return await this.replyService.getAllReplies(threadId, offset, limit);
     }
     @Query(() => [Reply], { name: 'repliesWithThread' })
     public async getRepliesWithThread(
         @Args('authorId', { type: () => String }) authorId: string,
+        @Args('limit', {type: () => Int , nullable: true}) limit?: number,
+        @Args('offset', {type: () => Int, nullable: true}) offset?: number,
     ) {
         const replies = await this.replyService.getRepliesWithThread(authorId);
         return replies;
@@ -54,6 +58,8 @@ export class ReplyResolver {
     @Query(() => [Reply], { name: 'parentReplies' })
     public async getParentReplies(
         @Args('parentId', { type: () => String }) parentId: string,
+        @Args('limit', {type: () => Int , nullable: true}) limit?: number,
+        @Args('offset', {type: () => Int, nullable: true}) offset?: number,
     ) {
         return await this.replyService.getParentReplies(parentId);
     }

@@ -30,6 +30,8 @@ model User {
     followings       Follow[]       @relation("Followings")
     notifications    Notification[]
 
+    notificationsReceived Notification[] @relation("receiver")
+
     @@index([username], name: "username")
 }
 
@@ -38,7 +40,7 @@ model Thread {
     createdAt      DateTime @default(now())
     updatedAt      DateTime @updatedAt
     content        String?
-    quoteContent    String?
+    quoteContent   String?
     author         User     @relation("ThreadAuthor", fields: [authorId], references: [id])
     authorId       String
     image          String?
@@ -109,24 +111,27 @@ model Follow {
 }
 
 enum NotificationType {
-  POST
-  REPLIES
-  REQUESTS
-  MENTIONS
-  QUOTES
-  REPOSTS
+    ALL
+    POST
+    REPLIES
+    REQUESTS
+    MENTIONS
+    QUOTES
+    REPOSTS
 }
-
 
 model Notification {
     id        String   @id @default(uuid()) @db.VarChar(36)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user        User             @relation(fields: [userId], references: [id], onDelete: Cascade, name: "receiver")
     userId      String
-    isDismissed Boolean @default(false)
+    isDismissed Boolean          @default(false)
     message     String
-    isRead      Boolean @default(false)
+    isRead      Boolean          @default(false)
     type        NotificationType
+
+    sender   User?   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+    senderId String?
 }

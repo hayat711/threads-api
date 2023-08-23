@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/database/prisma.service';
 import { isPrismaError } from 'src/common/utils';
+import { NotificationType } from '@prisma/client';
 
 @Injectable()
 export class FollowService {
@@ -78,6 +79,8 @@ export class FollowService {
                             id: true,
                             username: true,
                             photo: true,
+                            isPrivate: true,
+                            verified: true,
                         },
                     },
                 },
@@ -86,6 +89,8 @@ export class FollowService {
                 userId: follower.following.id,
                 username: follower.following.username,
                 photo: follower.following.photo || '', // Provide a default value if photo is null
+                isPrivate: follower.following.isPrivate,
+                verified: follower.following.verified,
             }));
             return validFollowers;
         } catch (error) {
@@ -107,6 +112,8 @@ export class FollowService {
                             id: true,
                             username: true,
                             photo: true,
+                            isPrivate: true,
+                            verified: true,
                         },
                     },
                 },
@@ -115,6 +122,8 @@ export class FollowService {
                 userId: follower.follower.id,
                 username: follower.follower.username,
                 photo: follower.follower.photo || '',
+                isPrivate: follower.follower.isPrivate,
+                verified: follower.follower.verified,
             }));
             return validFollowings;
 
@@ -138,6 +147,8 @@ export class FollowService {
                             id: true,
                             username: true,
                             photo: true,
+                            isPrivate: true,
+                            verified: true,
                         },
                     },
                 },
@@ -147,6 +158,8 @@ export class FollowService {
                 userId: follower.follower.id,
                 username: follower.follower.username,
                 photo: follower.follower.photo || '',
+                isPrivate: follower.follower.isPrivate,
+                verified: follower.follower.verified,
             }));
             return validFollowers;
         } catch (error) {
@@ -168,6 +181,9 @@ export class FollowService {
                             id: true,
                             username: true,
                             photo: true,
+                            isPrivate: true,
+                            verified: true,
+
                         },
                     },
                 },
@@ -175,7 +191,9 @@ export class FollowService {
             const validFollowings = followers.map((follower) => ({
                 userId: follower.following.id,
                 username: follower.following.username,
-                photo: follower.following.photo || '', // Provide a default value if photo is null
+                photo: follower.following.photo || '',
+                isPrivate: follower.following.isPrivate,
+                verified: follower.following.verified,
             }));
             return validFollowings;
         } catch (error) {
@@ -184,4 +202,6 @@ export class FollowService {
             throw error;
         }
     }
+
+   
 }

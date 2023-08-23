@@ -32,9 +32,7 @@ export class UserResolver {
         @Context() ctx: GqlFastifyContext,
     ) {
         try {
-            console.log('the values', values);
             const session = await ctx.req.session.get('user');
-            // add logic to upload and update the profile picture
             const user = await this.userService.update(session.id, values);
             ctx.req.session.set('user', user);
             return user;

@@ -32,4 +32,10 @@ export class FollowResponse {
 
     @Field(() => String, { nullable: true })
     photo: string | null;
+
+    @Field(() => Boolean, { nullable: false})
+    isPrivate: boolean;
+
+    @Field(() => Boolean, { nullable: false})
+    verified: boolean
 }

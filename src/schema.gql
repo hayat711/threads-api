@@ -63,9 +63,11 @@ type Follow {
 }
 
 type FollowResponse {
+  isPrivate: Boolean!
   photo: String
   userId: String!
   username: String!
+  verified: Boolean!
 }
 
 type Like {
@@ -84,10 +86,12 @@ type MeResult {
 }
 
 type Mutation {
+  confirmFollowReq(followerId: String!): Boolean!
   createNotification(createNotificationInput: CreateNotificationInput!): Notification!
   createThread(createThreadInput: CreateThreadInput!): Thread!
   createUser(createUserInput: CreateUserInput!): User!
   deleteThread(threadId: String!): String!
+  followRequest(followingId: String!): Notification!
   followUser(followingId: String!): Follow!
   likeParentReply(parentId: String!): Like!
   likeReply(replyId: String!): Like!
@@ -98,12 +102,10 @@ type Mutation {
   register(createUserInput: CreateUserInput!): AuthResult!
   removeLikeFromReply(replyId: String!): Like!
   removeLikeFromThread(threadId: String!): Like!
-  removeNotification(id: Int!): Notification!
   removeParentLike(parentId: String!): Like!
   reply(createReplyInput: CreateReplyInput!): Reply!
   replyParent(createReplyInput: CreateReplyInput!, parentId: String!): Reply!
   unFollowUser(followingId: String!): Follow!
-  updateNotification(updateNotificationInput: UpdateNotificationInput!): Notification!
   updateUser(values: UpdateUserInput!): Profile!
 }
 
@@ -120,16 +122,23 @@ type MyProfile {
 }
 
 type Notification {
-  """the text of a notification"""
-  content: String!
+  createdAt: DateTime!
+  id: ID!
   isDismissed: Boolean!
   isRead: Boolean!
+
+  """the text of a notification"""
+  message: String!
+  sender: User
+  senderId: String
   type: String!
+  updatedAt: DateTime!
   user: User!
   userId: String!
 }
 
 enum NotificationType {
+  ALL
   MENTIONS
   POST
   QUOTES
@@ -157,8 +166,9 @@ type Profile {
 }
 
 type Query {
-  allReplies(threadId: String!): [Reply!]!
+  allReplies(limit: Int, offset: Int, threadId: String!): [Reply!]!
   checkFollow(followingId: String!): Boolean!
+  feed(limit: Int, offset: Int): [Thread!]!
   getMyFollowers: [FollowResponse!]!
   getMyFollowings: [FollowResponse!]!
   getUserFollowers(userId: String!): [FollowResponse!]!
@@ -166,14 +176,14 @@ type Query {
   getUserThreads(userId: String!): [Thread!]!
   me: MeResult!
   myThreads: [Thread!]!
-  notification(id: Int!): Notification!
-  parentReplies(parentId: String!): [Reply!]!
-  repliesWithThread(authorId: String!): [Reply!]!
+  notifications(receiverId: String!, type: NotificationType): [Notification!]!
+  parentReplies(limit: Int, offset: Int, parentId: String!): [Reply!]!
+  repliesWithThread(authorId: String!, limit: Int, offset: Int): [Reply!]!
   reply(id: String!): Reply!
   replyLikes(replyId: String!): [ReplyLikeDto!]!
   thread(threadId: String!): Thread!
   threadLikes(threadId: String!): [ThreadLikeDto!]!
-  threads: [Thread!]!
+  threads(limit: Int, offset: Int): [Thread!]!
   user(field: String!, value: String!): Profile!
   userLikes: [Like!]!
 }
@@ -209,6 +219,10 @@ type ReplyLikeDto {
   userId: String!
 }
 
+type Subscription {
+  followRequestSent(followingId: String!): Notification!
+}
+
 type Thread {
   author: User!
   authorId: String!
@@ -236,13 +250,6 @@ type ThreadLikeDto {
   threadId: String!
   user: User!
   userId: String!
-}
-
-input UpdateNotificationInput {
-  id: Int!
-  isDismissed: Boolean
-  isRead: Boolean
-  type: NotificationType
 }
 
 input UpdateUserInput {

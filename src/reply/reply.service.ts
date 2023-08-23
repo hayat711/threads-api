@@ -106,7 +106,7 @@ export class ReplyService {
         }
     }
 
-    public async getAllReplies(threadId: string) {
+    public async getAllReplies(threadId: string, offset?: number, limit?:number) {
         try {
             const replies = await this.prisma.reply.findMany({
                 where: {
@@ -115,6 +115,7 @@ export class ReplyService {
                 },
                 orderBy: {
                     createdAt: 'desc',
+                    
                 },
                 include: {
                     author: {
@@ -127,7 +128,9 @@ export class ReplyService {
                         },
                     },
                 },
-                take: 20,
+                take: limit,
+                skip: offset,
+
             });
             return replies;
         } catch (error) {
@@ -137,7 +140,7 @@ export class ReplyService {
         }
     }
 
-    public getRepliesWithThread = async (authorId: string) => {
+    public getRepliesWithThread = async (authorId: string, offset?: number, limit?: number) => {
         try {
             const replies = await this.prisma.reply.findMany({
                 where: {
@@ -145,7 +148,10 @@ export class ReplyService {
                 },
                 orderBy: {
                     createdAt: 'desc',
-                }
+                },
+                take: limit,
+                skip: offset,
+
             });
             const repliesWithDetails = await Promise.all(
                 replies.map(async (reply) => ({
@@ -162,7 +168,7 @@ export class ReplyService {
             throw error;
         }
     };
-    public async getParentReplies(parentId: string) {
+    public async getParentReplies(parentId: string,  offset?: number, limit?:number) {
         try {
             const replies = await this.prisma.reply.findMany({
                 where: {
@@ -182,7 +188,8 @@ export class ReplyService {
                         },
                     },
                 },
-                take: 20,
+                take: limit,
+                skip: offset,
             });
             return replies;
         } catch (error) {

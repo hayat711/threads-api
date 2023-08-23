@@ -38,9 +38,20 @@ export class ThreadResolver {
 
     //? TODO : Add pagination and check if it should be protected or not
     @Query(() => [Thread], { name: 'threads' })
-    public async getAllThreads() {
-        const threads = await this.threadService.getAllThreads();      
+    public async getAllThreads(
+        @Args('limit', {type: () => Int , nullable: true}) limit?: number,
+        @Args('offset', {type: () => Int, nullable: true}) offset?: number,
+    ) {
+        const threads = await this.threadService.getAllThreads(offset, limit);      
         return threads;
+    }
+
+    @Query(() => [Thread], { name: 'feed'})
+    public async getFeed(
+        @Args('limit', {type: () => Int , nullable: true}) limit?: number,
+        @Args('offset', {type: () => Int, nullable: true}) offset?: number,
+    ) {
+        const threads = await this.threadService.getFeed(offset, limit);
     }
 
     @Query(() => [Thread], { name: 'myThreads' })
@@ -76,4 +87,6 @@ export class ThreadResolver {
         console.log('the deleted thread id ', id);
         return id;
     }
+
+   
 }

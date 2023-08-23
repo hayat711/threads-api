@@ -11,7 +11,6 @@ import { ConfigService } from '@nestjs/config';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
 import { UserInputError } from '@nestjs/apollo';
-import { processRequest } from 'graphql-upload-minimal';
 import { join } from 'path';
 
 
@@ -94,10 +93,6 @@ export async function bootstrap(): Promise<NestFastifyApplication> {
             if (!request.isMultipart) {
                 return;
             }
-            request.body = await processRequest(request.raw, reply.raw, {
-                maxFileSize: 50000000,
-                maxFiles: 10,
-            });
         });
     app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
 
