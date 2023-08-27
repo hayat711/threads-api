@@ -5,6 +5,8 @@ import { GqlFastifyContext } from 'src/common/types/graphql.types';
 import { UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/common/guards/auth.guard';
 
+
+@UseGuards(SessionGuard)
 @Resolver(() => Follow)
 export class FollowResolver {
     constructor(private readonly followService: FollowService) {}
@@ -45,7 +47,6 @@ export class FollowResolver {
         return this.followService.getMyFollowers(user.id);
     }
 
-    @UseGuards(SessionGuard)
     @Query(() => [FollowResponse], { name: 'getMyFollowings' })
     async getMyFollowings(@Context() ctx: GqlFastifyContext) {
         const user = await ctx.req.session.get('user');

@@ -204,6 +204,43 @@ export class ReplyService {
                 where: {
                     id,
                 },
+                include: {
+                    author: {
+                        select: {
+                            id: true,
+                            username: true,
+                            name: true,
+                            photo: true,
+                            isPrivate: true,
+                            verified: true,
+                        }
+                    },
+                    thread: {
+                        select: {
+                            id: true,
+                            content: true,
+                        }
+                    }, 
+                    replies: {
+                        select: {
+                            id: true,
+                            content: true,
+                            createdAt: true,
+                            repliesCount: true,
+                            likesCount: true,
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    photo: true,
+                                    name: true,
+                                    isPrivate: true,
+                                    verified: true,
+                                }
+                            }
+                        }
+                    }
+                }
             });
         } catch (error) {
             console.log(error.message);

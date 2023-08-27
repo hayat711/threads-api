@@ -15,7 +15,9 @@ import { UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/common/guards/auth.guard';
 import { PubSub } from 'graphql-subscriptions';
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
+import { SubscriptionGuard } from 'src/common/guards/subscription.guard';
 
+@UseGuards(SessionGuard)
 @Resolver(() => Notification)
 export class NotificationResolver {
     private pubsub: PubSub;
@@ -40,11 +42,9 @@ export class NotificationResolver {
         type: NotificationType,
     ) {
         const notifications = await this.notificationService.getNotifications(receiverId, type);
-        console.log('notifications 🚀', notifications);
         return notifications || [];
     }
 
-    @UseGuards(SessionGuard)
     @Mutation(() => Notification, { name: 'followRequest' })
     async followRequest(
         @Args('followingId', { type: () => String }) followingId: string,
@@ -68,6 +68,8 @@ export class NotificationResolver {
             return payload.userId === variables.followingId;
         },
     })
+
+    @UseGuards(SubscriptionGuard)
     followRequestSent(
         @Args('followingId', { type: () => String }) followingId: string,
     ) {

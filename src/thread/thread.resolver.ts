@@ -36,28 +36,38 @@ export class ThreadResolver {
         return thread;
     }
 
-    //? TODO : Add pagination and check if it should be protected or not
     @Query(() => [Thread], { name: 'threads' })
     public async getAllThreads(
-        @Args('limit', {type: () => Int , nullable: true}) limit?: number,
-        @Args('offset', {type: () => Int, nullable: true}) offset?: number,
+        @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+        @Args('offset', { type: () => Int, nullable: true }) offset?: number,
     ) {
-        const threads = await this.threadService.getAllThreads(offset, limit);      
+        const threads = await this.threadService.getAllThreads(offset, limit);
         return threads;
     }
 
-    @Query(() => [Thread], { name: 'feed'})
+    @Query(() => [Thread], { name: 'feed' })
     public async getFeed(
-        @Args('limit', {type: () => Int , nullable: true}) limit?: number,
-        @Args('offset', {type: () => Int, nullable: true}) offset?: number,
+        @Context() ctx: GqlFastifyContext,
+        @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+        @Args('offset', { type: () => Int, nullable: true }) offset?: number,
     ) {
-        const threads = await this.threadService.getFeed(offset, limit);
+        const user = await ctx.req.session.get('user');
+        const feed = await this.threadService.getFeed(
+            user.id,
+            offset,
+            limit,
+        );
+        return feed;
     }
 
     @Query(() => [Thread], { name: 'myThreads' })
-    public async myThreads(@Context() ctx: GqlFastifyContext) {
+    public async myThreads(
+        @Context() ctx: GqlFastifyContext,
+        @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+        @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+    ) {
         const user = ctx.req.session.get('user');
-        return await this.threadService.getUserThreads(user.id);
+        return await this.threadService.getUserThreads(user.id, offset, limit);
     }
 
     @Query(() => Thread, { name: 'thread' })
@@ -71,9 +81,24 @@ export class ThreadResolver {
     @Query(() => [Thread], { name: 'getUserThreads' })
     public async getUserThreads(
         @Args('userId', { type: () => String }) userId: string,
+        @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+        @Args('offset', { type: () => Int, nullable: true }) offset?: number,
     ) {
-        const thread = await this.threadService.getSingleUserThreads(userId);
+        const thread = await this.threadService.getSingleUserThreads(
+            userId,
+            offset,
+            limit,
+        );
         return thread;
+    }
+
+    @Query(() => [Thread], { name: 'repliedThreads' })
+    public async getRepliedThreads(
+        @Args('userId', { type: () => String }) userId: string,
+        @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+        @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+    ) {
+        return await this.threadService.getRepliedThread(userId);
     }
 
     @UseGuards(SessionGuard)
@@ -87,6 +112,4 @@ export class ThreadResolver {
         console.log('the deleted thread id ', id);
         return id;
     }
-
-   
 }

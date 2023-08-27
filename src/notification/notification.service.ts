@@ -68,6 +68,8 @@ export class NotificationService {
                             photo: true,
                             verified: true,
                             id: true,
+                            isPrivate: true,
+                            
                         },
                     },
                 },
@@ -97,6 +99,17 @@ export class NotificationService {
                     },
                     type: NotificationType.REQUESTS,
                 },
+                include: {
+                    user: {
+                        select: {
+                            username: true,
+                            photo: true,
+                            verified: true,
+                            id: true,
+                            isPrivate: true,
+                        }
+                    }
+                }
             });
             return followRequest;
         } catch (error) {

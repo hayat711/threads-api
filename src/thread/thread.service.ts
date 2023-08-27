@@ -11,6 +11,7 @@ import { PrismaService } from 'src/database/prisma.service';
 import { isPrismaError } from 'src/common/utils';
 import * as DataLoader from 'dataloader';
 import { Reply, Thread, User } from '@prisma/client';
+import { FollowService } from 'src/follow/follow.service';
 
 @Injectable()
 export class ThreadService {
@@ -18,7 +19,9 @@ export class ThreadService {
     private repliesLoader: DataLoader<string, Reply[]>;
     private repostedFromLoader: DataLoader<string, Thread | null>;
 
-    constructor(private readonly prisma: PrismaService) {
+    constructor(private readonly prisma: PrismaService,
+        private readonly followService: FollowService,
+        ) {
         this.authorLoader = new DataLoader<string, User>(this.batchAuthors);
         this.repliesLoader = new DataLoader<string, Reply[]>(this.batchReplies);
         this.repostedFromLoader = new DataLoader<string, Thread | null>(
@@ -190,7 +193,7 @@ export class ThreadService {
         }
     }
 
-    public async getAllThreads(offset?:number, limit?: number) {
+    public async getAllThreads(offset?: number, limit?: number) {
         try {
             const threads = await this.prisma.thread.findMany({
                 include: {
@@ -215,8 +218,8 @@ export class ThreadService {
                                     id: true,
                                     username: true,
                                     photo: true,
-                                }
-                            }
+                                },
+                            },
                         },
                     },
                     repostedFrom: {
@@ -280,15 +283,84 @@ export class ThreadService {
         }
     }
 
-    public async getFeed(offset?: number, limit?: number) {
+    public async getFeed(userId: string, offset?: number, limit?: number) {
         try {
+            // retrieve the list of the users followed by curr user
+            const followedUsers = await this.followService.getMyFollowings(userId);
+            const followedUsersIds = followedUsers?.map(user => user.userId);
+            // retrieve the threads from the followed users and recommended thread
             const threads = await this.prisma.thread.findMany({
+                where: {
+                    authorId: {
+                        in: followedUsersIds,
+                    },
+                    // OR : {
+                    //     author : {
+                    //         isPrivate: false,
+                    //     }
+                    // }
+                },
+                include: {
+                    author: {
+                        select: {
+                            id: true,
+                            username: true,
+                            photo: true,
+                            verified: true,
+                            name: true,
+                            isPrivate: true,
+                        },
+                    },
+                    replies: {
+                        select: {
+                            id: true,
+                            repliesCount: true,
+                            image: true,
+                            authorId: true,
+                            content: true,
+                            likesCount: true,
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    photo: true,
+                                },
+                            },
+                        },
+                    },
+                    repostedFrom: {
+                        select: {
+                            id: true,
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    photo: true,
+                                },
+                            },
+                            content: true,
+                            createdAt: true,
+                            updatedAt: true,
+                            image: true,
+                            likesCount: true,
+                            repostsCount: true,
+                            repostedFrom: {
+                                select: {
+                                    id: true,
+                                    authorId: true,
+                                    content: true,
+                                    createdAt: true,
+                                },
+                            },
+                        },
+                    },
+                },
                 orderBy: {
                     createdAt: 'desc'
                 },
                 take: limit,
                 skip: offset,
-            });
+            })
             return threads;
         } catch (error) {
             console.log(error);
@@ -311,7 +383,7 @@ export class ThreadService {
         }
     }
 
-    public async getUserThreads(userId: string) {
+    public async getUserThreads(userId: string, offset?: number, limit?: number) {
         try {
             const threads = await this.prisma.thread.findMany({
                 where: {
@@ -323,7 +395,9 @@ export class ThreadService {
                             id: true,
                             username: true,
                             photo: true,
-                            verified: true
+                            verified: true,
+                            name: true,
+                            isPrivate: true,
                         },
                     },
                     replies: {
@@ -339,8 +413,8 @@ export class ThreadService {
                                     id: true,
                                     username: true,
                                     photo: true,
-                                }
-                            }
+                                },
+                            },
                         },
                     },
                     repostedFrom: {
@@ -373,8 +447,8 @@ export class ThreadService {
                 orderBy: {
                     createdAt: 'desc',
                 },
-                take: 20,
-                //TODO : Add pagination
+                take: limit,
+                skip: offset,
             });
             return threads;
         } catch (error) {
@@ -384,7 +458,7 @@ export class ThreadService {
         }
     }
 
-    public async getSingleUserThreads(userId: string) {
+    public async getSingleUserThreads(userId: string, offset?: number, limit?: number){
         try {
             const threads = await this.prisma.thread.findMany({
                 where: {
@@ -396,7 +470,9 @@ export class ThreadService {
                             id: true,
                             username: true,
                             photo: true,
-                            verified: true
+                            verified: true,
+                            name: true,
+                            isPrivate: true,
                         },
                     },
                     replies: {
@@ -412,8 +488,8 @@ export class ThreadService {
                                     id: true,
                                     username: true,
                                     photo: true,
-                                }
-                            }
+                                },
+                            },
                         },
                     },
                     repostedFrom: {
@@ -446,8 +522,91 @@ export class ThreadService {
                 orderBy: {
                     createdAt: 'desc',
                 },
-                take: 20,
-                //TODO : Add pagination
+                take: limit,
+                skip: offset,
+            });
+            return threads;
+        } catch (error) {
+            console.log(error);
+            isPrismaError(error);
+            throw error;
+        }
+    }
+
+    public async getRepliedThread(
+        userId: string,
+        offset?: number,
+        limit?: number,
+    ) {
+        try {
+            const threads = await this.prisma.thread.findMany({
+                where: {
+                    replies: {
+                        some: {
+                            authorId: userId,
+                        },
+                    },
+                },
+                include: {
+                    author: {
+                        select: {
+                            id: true,
+                            username: true,
+                            photo: true,
+                            verified: true,
+                            name: true,
+                            isPrivate: true,
+                        },
+                    },
+                    replies: {
+                        select: {
+                            id: true,
+                            repliesCount: true,
+                            image: true,
+                            authorId: true,
+                            content: true,
+                            likesCount: true,
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    photo: true,
+                                },
+                            },
+                        },
+                    },
+                    repostedFrom: {
+                        select: {
+                            id: true,
+                            author: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    photo: true,
+                                },
+                            },
+                            content: true,
+                            createdAt: true,
+                            updatedAt: true,
+                            image: true,
+                            likesCount: true,
+                            repostsCount: true,
+                            repostedFrom: {
+                                select: {
+                                    id: true,
+                                    authorId: true,
+                                    content: true,
+                                    createdAt: true,
+                                },
+                            },
+                        },
+                    },
+                },
+                orderBy: {
+                    createdAt: 'desc',
+                },
+                take: limit,
+                skip: offset,
             });
             return threads;
         } catch (error) {

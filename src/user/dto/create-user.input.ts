@@ -14,6 +14,9 @@ export class CreateUserInput {
     @Field(() => String, { description: 'username must be unique' })
     username: string;
 
+
+
+    @IsOptional()
     @IsString()
     @Length(2, 255, {
         message: 'name must be between 2 and 255 characters',

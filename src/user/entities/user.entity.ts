@@ -11,7 +11,7 @@ export class User extends BaseEntity {
     username: UserDB['username'];
 
     @Field(() => String, { nullable: true})
-    name?: UserDB['username'];
+    name?: UserDB['name'];
 
     @Field(() => String)
     password: UserDB['password'];

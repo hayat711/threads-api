@@ -9,7 +9,6 @@ import {
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
 import { Session, UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/common/guards/auth.guard';
-import * as secureSession from '@fastify/secure-session';
 import { MeResult } from './dto/create-profile.dto';
 
 @Resolver('Auth')
@@ -31,7 +30,6 @@ export class AuthResolver {
         @Args('credentialsInput') credentialsInput: CredentialsInput,
         @Context() ctx: GqlFastifyContext,
     ) {
-        console.log('login called');
         const result = await this.authService.login(credentialsInput);
         ctx.req.session.set('user', result.profile);
         return result;

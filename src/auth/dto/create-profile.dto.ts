@@ -16,6 +16,9 @@ export class MyProfile {
     @Field()
     username: string;
 
+    @Field(() => String, { nullable: true })
+    name: string | null;
+
     @Field()
     verified: boolean;
 

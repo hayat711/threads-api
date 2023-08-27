@@ -116,7 +116,6 @@ export class LikeService {
                     likesCount: { increment: 1 },
                 },
             });
-            console.log('created parent reply like 👍 ', like);
             return like.id;
         } catch (error) {
             console.log(error);

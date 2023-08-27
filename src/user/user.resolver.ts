@@ -4,16 +4,21 @@ import { Profile, User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { GqlFastifyContext } from 'src/common/types/graphql.types';
+import { SessionGuard } from 'src/common/guards/auth.guard';
+import { UseGuards } from '@nestjs/common';
 
 @Resolver(() => User)
 export class UserResolver {
     constructor(private readonly userService: UserService) {}
 
+    @UseGuards(SessionGuard)
     @Mutation(() => User)
     createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
         return this.userService.create(createUserInput);
     }
 
+
+    @UseGuards(SessionGuard)
     @Query(() => Profile, { name: 'user' })
     getUser(@Args('field') field: string, @Args('value') value: string) {
         try {
@@ -26,6 +31,8 @@ export class UserResolver {
         }
     }
 
+
+    @UseGuards(SessionGuard)
     @Mutation(() => Profile)
     public async updateUser(
         @Args('values') values: UpdateUserInput,

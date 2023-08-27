@@ -115,6 +115,7 @@ type MyProfile {
   id: String!
   isPrivate: Boolean!
   link: String
+  name: String
   photo: String
   updatedAt: DateTime!
   username: String!
@@ -173,13 +174,14 @@ type Query {
   getMyFollowings: [FollowResponse!]!
   getUserFollowers(userId: String!): [FollowResponse!]!
   getUserFollowings(userId: String!): [FollowResponse!]!
-  getUserThreads(userId: String!): [Thread!]!
+  getUserThreads(limit: Int, offset: Int, userId: String!): [Thread!]!
   me: MeResult!
-  myThreads: [Thread!]!
+  myThreads(limit: Int, offset: Int): [Thread!]!
   notifications(receiverId: String!, type: NotificationType): [Notification!]!
   parentReplies(limit: Int, offset: Int, parentId: String!): [Reply!]!
+  repliedThreads(limit: Int, offset: Int, userId: String!): [Thread!]!
   repliesWithThread(authorId: String!, limit: Int, offset: Int): [Reply!]!
-  reply(id: String!): Reply!
+  reply(replyId: String!): Reply!
   replyLikes(replyId: String!): [ReplyLikeDto!]!
   thread(threadId: String!): Thread!
   threadLikes(threadId: String!): [ThreadLikeDto!]!
